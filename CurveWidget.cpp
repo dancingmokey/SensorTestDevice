@@ -292,6 +292,14 @@ Curve* CurveWidget::getCurve() const
 }
 
 
+void CurveWidget::dragMoveEvent(QDragMoveEvent *e)
+{
+    QRect p = e->answerRect();
+
+    qDebug() << p.left() << "," << p.right() << "," << p.top() << "," << p.bottom();
+}
+
+
 void CurveWidget::mousePressEvent(QMouseEvent *e)
 {
     if (e->button() == Qt::LeftButton)
