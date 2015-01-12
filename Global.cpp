@@ -7,7 +7,7 @@ const QString Global::CH2_SerialPort_Name = QString("/dev/ttyUSB1");
 
 
 const QColor Global::CH1_Serial_Color = Qt::red;
-const QColor Global::CH2_Serial_Color = Qt::green;
+const QColor Global::CH2_Serial_Color = Qt::blue;
 
 QMutex g_mutexCurve1Locker;
 QList<double> g_ltCurve1Data;
@@ -15,6 +15,9 @@ QByteArray g_acCurve1;
 QMutex g_mutexCurve2Locker;
 QList<double> g_ltCurve2Data;
 QByteArray g_acCurve2;
+
+QList<QString> g_ltXLabelTexts;
+QTime g_dtLastUpDate;
 
 Global::Global()
 {
@@ -31,5 +34,21 @@ void Global::Safe_Delete(void* pPointer)
         /** Release Memory Space and Set Pointer to NULL */
         delete pPointer;
         pPointer = NULL;
+    }
+}
+
+QString Global::Status_ToString(uint8 nStatus)
+{
+    if (nStatus == Global::Status_Catch)
+    {
+        return QString("Catch");
+    }
+    else if (nStatus == Global::Status_None)
+    {
+        return QString("None");
+    }
+    else
+    {
+        return QString("Unknown");
     }
 }

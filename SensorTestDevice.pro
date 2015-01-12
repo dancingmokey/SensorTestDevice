@@ -12,7 +12,8 @@ TARGET = SensorTestDevice
 TEMPLATE = app
 
 DEFINES += _TTY_POSIX_
-DEFINES += _DEBUG_SIMULATE
+#DEFINES += _DEBUG_SIMULATE
+DEFINES += _DEBUG_OUTPUT
 
 
 SOURCES += main.cpp\
@@ -26,7 +27,8 @@ SOURCES += main.cpp\
     DataSource.cpp \
     SerialPort/posix_qextserialport.cpp \
     SerialPort/qextserialbase.cpp \
-    DataProcess.cpp
+    DataProcess.cpp \
+    StatusCheck.cpp
 
 HEADERS  += MainWindow.h \
     Serial.h \
@@ -38,9 +40,13 @@ HEADERS  += MainWindow.h \
     DataSource.h \
     SerialPort/posix_qextserialport.h \
     SerialPort/qextserialbase.h \
-    DataProcess.h
+    DataProcess.h \
+    StatusCheck.h
 
 FORMS    += MainWindow.ui
 
 SUBDIRS += \
     SerialPort/qextserialport.pro
+
+RESOURCES += \
+    Images.qrc

@@ -83,8 +83,12 @@ void DataSource::run(void)
     qsrand(vCurrTime.msec() + vCurrTime.second() * 1000);
 #endif
 
-    /** Loop of Work Thread */
+#ifdef _DEBUG_OUTPUT
+    /** Debug Output Variable */
     int nLoopCount = 0;
+#endif
+
+    /** Loop of Work Thread */
     while (m_bEnableRunning == true)
     {
         /** Declare Data Buffer */
@@ -94,7 +98,7 @@ void DataSource::run(void)
         /** Generate Random Numbers */
         for (int i = 0; i < 16; ++i)
         {
-            int nValue = qrand() % 255;
+            int nValue = qrand() % 130 - 10;    /** Random Number Range : -10 ~ 120 */
             acRecvBuf.append(nValue);
         }
 
@@ -129,6 +133,7 @@ void DataSource::run(void)
                 g_mutexCurve2Locker.unlock();
             }
 
+#ifndef _DEBUG_OUTPUT
             /** Debug Output */
             qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
                      << " Loop Times "
@@ -138,6 +143,7 @@ void DataSource::run(void)
                      << " Received Data "
                      << acRecvBuf.size()
                      << " Byte!";
+#endif
         }
 
         /** Sleep Thread 10ms*/

@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include "DataSource.h"
 #include "DataProcess.h"
+#include "StatusCheck.h"
 
 namespace Ui {
 class MainWindow;
@@ -40,9 +41,9 @@ public:
     void CreateCurves(void);
 
     /**
-     * @brief CreateDataSource
+     * @brief CreateStatusCheck
      */
-    void CreateDataSource(void);
+    void CreateStatusCheck(void);
 
     /**
      * @brief CreateDataProcess
@@ -50,16 +51,19 @@ public:
     void CreateDataProcess(void);
 
     /**
+     * @brief CreateDataSource
+     */
+    void CreateDataSource(void);
+
+    /**
      * @brief CreateTimer
      */
     void CreateTimer(void);
 
-private slots:
-    /**
-     * @brief on_SplitCtrlBtn_clicked
-     */
-    void on_SplitCtrlBtn_clicked(void);
 
+    void UpdateInfoWidget(void);
+
+private slots:
     /**
      * @brief on_ZoomInCtrlBtn_clicked
      */
@@ -81,25 +85,40 @@ private slots:
     void on_CatchCtrlBtn_clicked(void);
 
     /**
-     * @brief on_ParamCtrlBtn_clicked
-     */
-    void on_ParamCtrlBtn_clicked(void);
-
-    /**
      * @brief UpdateSlot
      */
     void UpdateSlot(void);
 
-private:
     /**
-     * @brief m_bIsSplit : bool : Is Split Display ot Not
+     * @brief UpdateCHStatusSlot
+     * @param strCHName
+     * @param nCHStatus
+     * @param dtCHCatch
+     * @param nCHCatchOffset
+     * @param nCHExtremumVal
      */
-    bool m_bIsSplit;
+    void UpdateCHStatusSlot(QString strCHName,
+                            unsigned char nCHStatus,
+                            QTime dtCHCatch,
+                            int nCHCatchOffset,
+                            double nCHExtremumVal);
 
+    /**
+     * @brief UpdateSensorStatusSlot
+     * @param nMSDiff
+     */
+    void UpdateSensorStatusSlot(int nMSDiff);
+
+private:
     /**
      * @brief m_bIsPause : bool : Is Pause Display ot Not
      */
     bool m_bIsPause;
+
+    /**
+     * @brief m_bIsAutoCatch : bool : Is Auto Catch ot Manually
+     */
+    bool m_bIsAutoCatch;
 
     /**
      * @brief m_pCH1DataSrc : DataSource* : Channel 1 Data Source
@@ -120,6 +139,8 @@ private:
      * @brief m_pCH2DataProc : DataProcess* : Channel 2 Data Process
      */
     DataProcess* m_pCH2DataProc;
+
+    StatusCheck* m_pStatusCheck;
 
     /**
      * @brief m_pUpdateTimer : QTimer* : Timer of Update UI

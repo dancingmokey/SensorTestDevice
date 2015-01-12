@@ -44,15 +44,15 @@ void Curve::CreateAxis(void)
 {
     /** Create Horizontal Axis */
     m_pXAxis = new Axis(this->CalcAxisLine(Global::Axis_Horizontal),
-                        2000,
-                        0,
-                        200);
+                        Global::Axis_Hor_MaxVal,
+                        Global::Axis_Hor_MinVal,
+                        Global::Axis_Hor_TickVal);
 
     /** Create Vertical Axis */
     m_pYAxis = new Axis(this->CalcAxisLine(Global::Axis_Vertical),
-                        25.5,
-                        0,
-                        5);
+                        Global::Axis_Ver_MaxVal,
+                        Global::Axis_Ver_MinVal,
+                        Global::Axis_Ver_TickVal);
 }
 
 /**

@@ -5,8 +5,7 @@
  * @param parent
  */
 CurveWidget::CurveWidget(QWidget *parent) :
-    QWidget(parent),
-    m_bIsDrag(false)
+    QWidget(parent)
 {
     m_pCurve = new Curve(new QRectF(this->rect().left(),
                                     this->rect().top(),
@@ -35,9 +34,10 @@ void CurveWidget::paintEvent(QPaintEvent *e)
     /**  Declare Painter and then Set Pen */
     QPainter vPainter(this);
     vPainter.setBrush(Qt::black);
+    vPainter.setPen(QPen(Qt::black, 2, Qt::DotLine, Qt::FlatCap));
 
     /** Draw Widget Background */
-    vPainter.drawRect(this->rect());
+//    vPainter.drawRect(this->rect());
 
     /** Draw Ticks of X&Y Axis */
     this->DrawGrids() ;
@@ -53,9 +53,6 @@ void CurveWidget::paintEvent(QPaintEvent *e)
 
     /** Draw Serials */
     this->DrawSerials();
-
-
-    this->DrawDragRect();
 }
 
 /**
@@ -83,7 +80,7 @@ void CurveWidget::DrawTicks(void)
 {
     /** Declare Painter and then Set Pen */
     QPainter vPainter(this);
-    vPainter.setPen(QPen(Qt::blue, 2, Qt::SolidLine, Qt::FlatCap));
+    vPainter.setPen(QPen(Qt::gray, 2, Qt::SolidLine, Qt::FlatCap));
 
     /** Draw X Axis Ticks */
     QList<QLineF*> ltXAxisTicks = m_pCurve->getXAxis()->getTickLines();
@@ -145,8 +142,9 @@ void CurveWidget::DrawGrids(void)
  */
 void CurveWidget::DrawLabels(void)
 {
-    /** Declare Painter and then Set Pen */
+    /** Declare Painter and then Set Pen & Font */
     QPainter vPainter(this);
+    vPainter.setFont(QFont(QString(""), 10, 2, false));
     vPainter.setPen(QPen(Qt::gray, 1, Qt::DotLine, Qt::FlatCap));
 
     /** Draw X Axis Grids */
@@ -156,8 +154,17 @@ void CurveWidget::DrawLabels(void)
     {
         /** Draw Labels */
         QRectF* pRect = ltXLabelRects.at(i);
+
+//        /** Draw Global Label Text */
+//        if(i < g_ltXLabelTexts.size())
+//        {
+//            QString strText = g_ltXLabelTexts.at(i);
+//            vPainter.drawText(*pRect, Qt::AlignHCenter | Qt::AlignVCenter, strText);
+//        }
+
+        /** Draw Original Label Text */
         QString strText = ltXLabelTexts.at(i);
-        vPainter.drawText(*pRect, strText);
+        vPainter.drawText(*pRect, Qt::AlignHCenter | Qt::AlignVCenter, strText);
     }
 
     /** Draw Y Axis Labels */
@@ -168,7 +175,7 @@ void CurveWidget::DrawLabels(void)
         /** Draw Label */
         QRectF* pRect = ltYLabelRects.at(i);
         QString strText = ltYLabelTexts.at(i);
-        vPainter.drawText(*pRect, strText);
+        vPainter.drawText(*pRect, Qt::AlignRight | Qt::AlignVCenter, strText);
     }
 }
 
@@ -221,8 +228,12 @@ void CurveWidget::DrawSerials(void)
                               dYAxisStartPos -
                               pYAxis->GetPositionByValue(pNextData->m_dY));
 
-            /** Draw Line */
-             vPainter.drawLine(vStartPoint, vEndPoint);
+            /** Only Draw the Points in Axis Bound */
+            if (vStartPoint.x() >= dXAxisStartPos)
+            {
+                /** Draw Line */
+                 vPainter.drawLine(vStartPoint, vEndPoint);
+            }
         }
     }
 }
@@ -289,59 +300,6 @@ void CurveWidget::UpdateCurve(QString strSerialName,
 Curve* CurveWidget::getCurve() const
 {
     return m_pCurve;
-}
-
-
-void CurveWidget::dragMoveEvent(QDragMoveEvent *e)
-{
-    QRect p = e->answerRect();
-
-    qDebug() << p.left() << "," << p.right() << "," << p.top() << "," << p.bottom();
-}
-
-
-void CurveWidget::mousePressEvent(QMouseEvent *e)
-{
-    if (e->button() == Qt::LeftButton)
-    {
-        m_vStartPt = e->pos();
-        m_bIsDrag = true;
-        qDebug() << "Mouse Left Button Pressed on " << m_vStartPt.x() << "," << m_vStartPt.y();
-    }
-}
-
-
-void CurveWidget::mouseMoveEvent(QMouseEvent *e)
-{
-    if (m_bIsDrag == true)
-    {
-        m_vEndPt = e->pos();
-        qDebug() << "Mouse Left Button Moved to " << m_vEndPt.x() << "," << m_vEndPt.y();
-
-    }
-}
-
-
-void CurveWidget::mouseReleaseEvent(QMouseEvent *e)
-{
-    if (e->button() == Qt::LeftButton)
-    {
-        m_bIsDrag = false;
-        qDebug() << "Mouse Left Button Released on " << m_vEndPt.x() << "," << m_vEndPt.y();
-    }
-}
-
-void CurveWidget::DrawDragRect(void)
-{
-    /**  */
-    if (m_bIsDrag == true)
-    {
-        QPainter vPainter(this);
-        vPainter.setPen(QPen(Qt::cyan, 2, Qt::DotLine, Qt::FlatCap));
-
-        QRect vRect(m_vStartPt, m_vEndPt);
-        vPainter.drawRect(vRect);
-    }
 }
 
 

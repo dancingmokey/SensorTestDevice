@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/Images">
+        <file>Images/AutoCatchBtn.png</file>
+        <file>Images/ContinueBtn.png</file>
+        <file>Images/ManuallyCatchBtn.png</file>
+        <file>Images/MergeBtn.png</file>
+        <file>Images/SetBtn.png</file>
+        <file>Images/SplitBtn.png</file>
+        <file>Images/ZoomInBtn.png</file>
+        <file>Images/ZoomOutBtn.png</file>
+        <file>Images/PauseBtn.png</file>
+        <file>Images/BackGround.png</file>
+        <file>Images/AutoCatchOpenBtn.png</file>
+        <file>Images/AutoCatchCloseBtn.png</file>
+    </qresource>
+</RCC>

@@ -109,16 +109,6 @@ public:
      */
     Curve* getCurve(void) const;
 
-public:
-    virtual void mousePressEvent(QMouseEvent *e);
-    virtual void mouseMoveEvent(QMouseEvent *e);
-    virtual void mouseReleaseEvent(QMouseEvent *e);
-    virtual void dragMoveEvent(QDragMoveEvent *e);
-    void DrawDragRect(void);
-    QPoint m_vStartPt;
-    QPoint m_vEndPt;
-    bool m_bIsDrag;
-
 private:
     /**
      * @brief m_pCurve

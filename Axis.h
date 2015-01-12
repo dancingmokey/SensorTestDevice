@@ -212,6 +212,10 @@ private:
      * @brief m_ltTickValues : QList<double> : Tick Value List of Axis
      */
     QList<double> m_ltTickValues;
+
+
+public:
+    int m_nCatchVal;
 };
 
 #endif // AXIS_H

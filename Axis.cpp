@@ -59,7 +59,7 @@ void Axis::ResetAxisScale(void)
     for (int i = 0; i < nTickCount; ++i)
     {
         this->m_ltTickValues.push_back(
-                    this->m_dMinValue + this->m_dTickValue * i);
+                    this->m_dMinValue + this->m_dTickValue * i + 1);
     }
 }
 
@@ -133,7 +133,7 @@ void Axis::ResetAxisLayout(void)
             m_ltLabelRects.push_back(
                         new QRectF(dStartX - Global::Label_Width / 2,
                                    dYPos - Global::Label_Height / 2,
-                                   Global::Label_Width,
+                                   Global::Label_Width / 2,
                                    Global::Label_Height));
 
             /** Storage Label Text into List */
