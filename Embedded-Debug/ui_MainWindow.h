@@ -19,6 +19,7 @@
 #include <QtGui/QPushButton>
 #include <QtGui/QWidget>
 #include "CurveWidget.h"
+#include "InfoWidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -31,13 +32,11 @@ public:
     QWidget *ControlWgt;
     QHBoxLayout *horizontalLayout_2;
     QHBoxLayout *horizontalLayout;
-    QPushButton *SplitCtrlBtn;
+    QPushButton *CatchCtrlBtn;
     QPushButton *ZoomInCtrlBtn;
     QPushButton *ZoomOutCtrlBtn;
     QPushButton *PauseCtrlBtn;
-    QPushButton *CatchCtrlBtn;
-    QPushButton *ParamCtrlBtn;
-    QWidget *TestInfoWgt;
+    InfoWidget *TestInfoWgt;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -51,6 +50,7 @@ public:
         MainWindow->setSizePolicy(sizePolicy);
         MainWindow->setMinimumSize(QSize(1280, 800));
         MainWindow->setMaximumSize(QSize(1280, 800));
+        MainWindow->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 0, 0);"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         QSizePolicy sizePolicy1(QSizePolicy::Maximum, QSizePolicy::Expanding);
@@ -60,6 +60,7 @@ public:
         centralWidget->setSizePolicy(sizePolicy1);
         centralWidget->setMinimumSize(QSize(1280, 800));
         centralWidget->setMaximumSize(QSize(1280, 800));
+        centralWidget->setStyleSheet(QString::fromUtf8(""));
         Curve2Wgt = new CurveWidget(centralWidget);
         Curve2Wgt->setObjectName(QString::fromUtf8("Curve2Wgt"));
         Curve2Wgt->setGeometry(QRect(0, 350, 1280, 350));
@@ -68,7 +69,7 @@ public:
         Curve2Wgt->setMinimumSize(QSize(1280, 0));
         Curve2Wgt->setMaximumSize(QSize(1280, 350));
         QPalette palette;
-        QBrush brush(QColor(12, 255, 60, 255));
+        QBrush brush(QColor(0, 0, 0, 255));
         brush.setStyle(Qt::SolidPattern);
         palette.setBrush(QPalette::Active, QPalette::Button, brush);
         palette.setBrush(QPalette::Active, QPalette::Base, brush);
@@ -80,8 +81,7 @@ public:
         palette.setBrush(QPalette::Disabled, QPalette::Base, brush);
         palette.setBrush(QPalette::Disabled, QPalette::Window, brush);
         Curve2Wgt->setPalette(palette);
-        Curve2Wgt->setStyleSheet(QString::fromUtf8("background-color: rgb(12, 255, 60);\n"
-"border-color: rgb(255, 255, 255);"));
+        Curve2Wgt->setStyleSheet(QString::fromUtf8(""));
         Curve1Wgt = new CurveWidget(centralWidget);
         Curve1Wgt->setObjectName(QString::fromUtf8("Curve1Wgt"));
         Curve1Wgt->setGeometry(QRect(0, 0, 1280, 350));
@@ -92,8 +92,7 @@ public:
         Curve1Wgt->setSizePolicy(sizePolicy2);
         Curve1Wgt->setMinimumSize(QSize(1280, 350));
         Curve1Wgt->setMaximumSize(QSize(1280, 700));
-        Curve1Wgt->setStyleSheet(QString::fromUtf8("background-color: rgb(11, 11, 255);\n"
-"border-color: rgb(255, 255, 255);"));
+        Curve1Wgt->setStyleSheet(QString::fromUtf8(""));
         ControlWgt = new QWidget(centralWidget);
         ControlWgt->setObjectName(QString::fromUtf8("ControlWgt"));
         ControlWgt->setEnabled(true);
@@ -102,7 +101,7 @@ public:
         ControlWgt->setSizePolicy(sizePolicy);
         ControlWgt->setMinimumSize(QSize(1280, 100));
         ControlWgt->setMaximumSize(QSize(1280, 100));
-        ControlWgt->setStyleSheet(QString::fromUtf8("background-color: rgb(248, 255, 161);"));
+        ControlWgt->setStyleSheet(QString::fromUtf8("background-color: rgb(84, 84, 84);"));
         horizontalLayout_2 = new QHBoxLayout(ControlWgt);
         horizontalLayout_2->setSpacing(0);
         horizontalLayout_2->setContentsMargins(11, 11, 11, 11);
@@ -112,20 +111,22 @@ public:
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        SplitCtrlBtn = new QPushButton(ControlWgt);
-        SplitCtrlBtn->setObjectName(QString::fromUtf8("SplitCtrlBtn"));
+        CatchCtrlBtn = new QPushButton(ControlWgt);
+        CatchCtrlBtn->setObjectName(QString::fromUtf8("CatchCtrlBtn"));
         QSizePolicy sizePolicy3(QSizePolicy::Minimum, QSizePolicy::Expanding);
         sizePolicy3.setHorizontalStretch(0);
         sizePolicy3.setVerticalStretch(0);
-        sizePolicy3.setHeightForWidth(SplitCtrlBtn->sizePolicy().hasHeightForWidth());
-        SplitCtrlBtn->setSizePolicy(sizePolicy3);
+        sizePolicy3.setHeightForWidth(CatchCtrlBtn->sizePolicy().hasHeightForWidth());
+        CatchCtrlBtn->setSizePolicy(sizePolicy3);
+        CatchCtrlBtn->setStyleSheet(QString::fromUtf8("border-image: url(:/Images/Images/AutoCatchOpenBtn.png);"));
 
-        horizontalLayout->addWidget(SplitCtrlBtn);
+        horizontalLayout->addWidget(CatchCtrlBtn);
 
         ZoomInCtrlBtn = new QPushButton(ControlWgt);
         ZoomInCtrlBtn->setObjectName(QString::fromUtf8("ZoomInCtrlBtn"));
         sizePolicy3.setHeightForWidth(ZoomInCtrlBtn->sizePolicy().hasHeightForWidth());
         ZoomInCtrlBtn->setSizePolicy(sizePolicy3);
+        ZoomInCtrlBtn->setStyleSheet(QString::fromUtf8("border-image: url(:/Images/Images/ZoomInBtn.png);"));
 
         horizontalLayout->addWidget(ZoomInCtrlBtn);
 
@@ -133,6 +134,7 @@ public:
         ZoomOutCtrlBtn->setObjectName(QString::fromUtf8("ZoomOutCtrlBtn"));
         sizePolicy3.setHeightForWidth(ZoomOutCtrlBtn->sizePolicy().hasHeightForWidth());
         ZoomOutCtrlBtn->setSizePolicy(sizePolicy3);
+        ZoomOutCtrlBtn->setStyleSheet(QString::fromUtf8("border-image: url(:/Images/Images/ZoomOutBtn.png);"));
 
         horizontalLayout->addWidget(ZoomOutCtrlBtn);
 
@@ -140,29 +142,21 @@ public:
         PauseCtrlBtn->setObjectName(QString::fromUtf8("PauseCtrlBtn"));
         sizePolicy3.setHeightForWidth(PauseCtrlBtn->sizePolicy().hasHeightForWidth());
         PauseCtrlBtn->setSizePolicy(sizePolicy3);
+        PauseCtrlBtn->setStyleSheet(QString::fromUtf8("border-image: url(:/Images/Images/PauseBtn.png);"));
 
         horizontalLayout->addWidget(PauseCtrlBtn);
 
-        CatchCtrlBtn = new QPushButton(ControlWgt);
-        CatchCtrlBtn->setObjectName(QString::fromUtf8("CatchCtrlBtn"));
-        sizePolicy3.setHeightForWidth(CatchCtrlBtn->sizePolicy().hasHeightForWidth());
-        CatchCtrlBtn->setSizePolicy(sizePolicy3);
-
-        horizontalLayout->addWidget(CatchCtrlBtn);
-
-        ParamCtrlBtn = new QPushButton(ControlWgt);
-        ParamCtrlBtn->setObjectName(QString::fromUtf8("ParamCtrlBtn"));
-        sizePolicy3.setHeightForWidth(ParamCtrlBtn->sizePolicy().hasHeightForWidth());
-        ParamCtrlBtn->setSizePolicy(sizePolicy3);
-
-        horizontalLayout->addWidget(ParamCtrlBtn);
-
-        TestInfoWgt = new QWidget(ControlWgt);
+        TestInfoWgt = new InfoWidget(ControlWgt);
         TestInfoWgt->setObjectName(QString::fromUtf8("TestInfoWgt"));
-        TestInfoWgt->setStyleSheet(QString::fromUtf8("background-color: rgb(151, 224, 255);"));
+        TestInfoWgt->setStyleSheet(QString::fromUtf8("background-color: rgb(20, 20, 20);"));
 
         horizontalLayout->addWidget(TestInfoWgt);
 
+        horizontalLayout->setStretch(0, 1);
+        horizontalLayout->setStretch(1, 1);
+        horizontalLayout->setStretch(2, 1);
+        horizontalLayout->setStretch(3, 1);
+        horizontalLayout->setStretch(4, 3);
 
         horizontalLayout_2->addLayout(horizontalLayout);
 
@@ -176,12 +170,10 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0, QApplication::UnicodeUTF8));
-        SplitCtrlBtn->setText(QApplication::translate("MainWindow", "Split/Merge", 0, QApplication::UnicodeUTF8));
-        ZoomInCtrlBtn->setText(QApplication::translate("MainWindow", "Zoom In", 0, QApplication::UnicodeUTF8));
-        ZoomOutCtrlBtn->setText(QApplication::translate("MainWindow", "Zoom Out", 0, QApplication::UnicodeUTF8));
-        PauseCtrlBtn->setText(QApplication::translate("MainWindow", "Pause/Continue", 0, QApplication::UnicodeUTF8));
-        CatchCtrlBtn->setText(QApplication::translate("MainWindow", "Catch", 0, QApplication::UnicodeUTF8));
-        ParamCtrlBtn->setText(QApplication::translate("MainWindow", "Param", 0, QApplication::UnicodeUTF8));
+        CatchCtrlBtn->setText(QString());
+        ZoomInCtrlBtn->setText(QString());
+        ZoomOutCtrlBtn->setText(QString());
+        PauseCtrlBtn->setText(QString());
     } // retranslateUi
 
 };

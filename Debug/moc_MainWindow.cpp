@@ -23,7 +23,7 @@ static const uint qt_meta_data_MainWindow[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-       7,   14, // methods
+       5,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -32,23 +32,19 @@ static const uint qt_meta_data_MainWindow[] = {
 
  // slots: signature, parameters, type, tag, flags
       12,   11,   11,   11, 0x08,
-      38,   11,   11,   11, 0x08,
-      65,   11,   11,   11, 0x08,
+      39,   11,   11,   11, 0x08,
+      67,   11,   11,   11, 0x08,
       93,   11,   11,   11, 0x08,
      119,   11,   11,   11, 0x08,
-     145,   11,   11,   11, 0x08,
-     171,   11,   11,   11, 0x08,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_MainWindow[] = {
-    "MainWindow\0\0on_SplitCtrlBtn_clicked()\0"
-    "on_ZoomInCtrlBtn_clicked()\0"
+    "MainWindow\0\0on_ZoomInCtrlBtn_clicked()\0"
     "on_ZoomOutCtrlBtn_clicked()\0"
     "on_PauseCtrlBtn_clicked()\0"
-    "on_CatchCtrlBtn_clicked()\0"
-    "on_ParamCtrlBtn_clicked()\0UpdateSlot()\0"
+    "on_CatchCtrlBtn_clicked()\0UpdateSlot()\0"
 };
 
 void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -57,13 +53,11 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         Q_ASSERT(staticMetaObject.cast(_o));
         MainWindow *_t = static_cast<MainWindow *>(_o);
         switch (_id) {
-        case 0: _t->on_SplitCtrlBtn_clicked(); break;
-        case 1: _t->on_ZoomInCtrlBtn_clicked(); break;
-        case 2: _t->on_ZoomOutCtrlBtn_clicked(); break;
-        case 3: _t->on_PauseCtrlBtn_clicked(); break;
-        case 4: _t->on_CatchCtrlBtn_clicked(); break;
-        case 5: _t->on_ParamCtrlBtn_clicked(); break;
-        case 6: _t->UpdateSlot(); break;
+        case 0: _t->on_ZoomInCtrlBtn_clicked(); break;
+        case 1: _t->on_ZoomOutCtrlBtn_clicked(); break;
+        case 2: _t->on_PauseCtrlBtn_clicked(); break;
+        case 3: _t->on_CatchCtrlBtn_clicked(); break;
+        case 4: _t->UpdateSlot(); break;
         default: ;
         }
     }
@@ -102,9 +96,9 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
+        if (_id < 5)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 5;
     }
     return _id;
 }

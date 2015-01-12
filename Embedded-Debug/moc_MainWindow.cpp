@@ -31,23 +31,24 @@ static const uint qt_meta_data_MainWindow[] = {
 
  // slots: signature, parameters, type, tag, flags
       12,   11,   11,   11, 0x08,
-      38,   11,   11,   11, 0x08,
-      65,   11,   11,   11, 0x08,
+      39,   11,   11,   11, 0x08,
+      67,   11,   11,   11, 0x08,
       93,   11,   11,   11, 0x08,
      119,   11,   11,   11, 0x08,
-     145,   11,   11,   11, 0x08,
-     171,   11,   11,   11, 0x08,
+     192,  132,   11,   11, 0x08,
+     259,  251,   11,   11, 0x08,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_MainWindow[] = {
-    "MainWindow\0\0on_SplitCtrlBtn_clicked()\0"
-    "on_ZoomInCtrlBtn_clicked()\0"
+    "MainWindow\0\0on_ZoomInCtrlBtn_clicked()\0"
     "on_ZoomOutCtrlBtn_clicked()\0"
     "on_PauseCtrlBtn_clicked()\0"
-    "on_CatchCtrlBtn_clicked()\0"
-    "on_ParamCtrlBtn_clicked()\0UpdateSlot()\0"
+    "on_CatchCtrlBtn_clicked()\0UpdateSlot()\0"
+    "strCHName,nCHStatus,dtCHCatch,nCHCatchOffset,nCHExtremumVal\0"
+    "UpdateCHStatusSlot(QString,unsigned char,QTime,int,double)\0"
+    "nMSDiff\0UpdateSensorStatusSlot(int)\0"
 };
 
 void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -56,17 +57,16 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         Q_ASSERT(staticMetaObject.cast(_o));
         MainWindow *_t = static_cast<MainWindow *>(_o);
         switch (_id) {
-        case 0: _t->on_SplitCtrlBtn_clicked(); break;
-        case 1: _t->on_ZoomInCtrlBtn_clicked(); break;
-        case 2: _t->on_ZoomOutCtrlBtn_clicked(); break;
-        case 3: _t->on_PauseCtrlBtn_clicked(); break;
-        case 4: _t->on_CatchCtrlBtn_clicked(); break;
-        case 5: _t->on_ParamCtrlBtn_clicked(); break;
-        case 6: _t->UpdateSlot(); break;
+        case 0: _t->on_ZoomInCtrlBtn_clicked(); break;
+        case 1: _t->on_ZoomOutCtrlBtn_clicked(); break;
+        case 2: _t->on_PauseCtrlBtn_clicked(); break;
+        case 3: _t->on_CatchCtrlBtn_clicked(); break;
+        case 4: _t->UpdateSlot(); break;
+        case 5: _t->UpdateCHStatusSlot((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< unsigned char(*)>(_a[2])),(*reinterpret_cast< QTime(*)>(_a[3])),(*reinterpret_cast< int(*)>(_a[4])),(*reinterpret_cast< double(*)>(_a[5]))); break;
+        case 6: _t->UpdateSensorStatusSlot((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
     }
-    Q_UNUSED(_a);
 }
 
 const QMetaObjectExtraData MainWindow::staticMetaObjectExtraData = {
