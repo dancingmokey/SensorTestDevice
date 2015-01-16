@@ -146,6 +146,14 @@ public:
      */
     void setIsDrawMousePos(bool bIsDrawMousePos);
 
+    /**
+     * @brief setZoomParams
+     * @param bIsAutoCatch
+     * @param dMaxValue
+     * @param dMinValue
+     */
+    void setZoomParams(bool bIsAutoCatch, double dMaxValue, double dMinValue);
+
 private:
     /**
      * @brief m_pCurve

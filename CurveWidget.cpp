@@ -189,16 +189,16 @@ void CurveWidget::DrawLabels(void)
         /** Draw Labels */
         QRectF* pRect = ltXLabelRects.at(i);
 
-//        /** Draw Global Label Text */
-//        if(i < g_ltXLabelTexts.size())
-//        {
-//            QString strText = g_ltXLabelTexts.at(i);
-//            vPainter.drawText(*pRect, Qt::AlignHCenter | Qt::AlignVCenter, strText);
-//        }
+        /** Draw Global Label Text */
+        if(i < g_ltXLabelTexts.size())
+        {
+            QString strText = g_ltXLabelTexts.at(i);
+            vPainter.drawText(*pRect, Qt::AlignHCenter | Qt::AlignVCenter, strText);
+        }
 
-        /** Draw Original Label Text */
-        QString strText = ltXLabelTexts.at(i);
-        vPainter.drawText(*pRect, Qt::AlignHCenter | Qt::AlignVCenter, strText);
+//        /** Draw Original Label Text */
+//        QString strText = ltXLabelTexts.at(i);
+//        vPainter.drawText(*pRect, Qt::AlignHCenter | Qt::AlignVCenter, strText);
     }
 
     /** Draw Y Axis Labels */
@@ -481,24 +481,38 @@ void CurveWidget::setMousePos(QPoint ptMousePos)
 void CurveWidget::setIsDrawMousePos(bool bIsDrawMousePos)
 {
     m_bIsDrawMousePos = bIsDrawMousePos;
+}
 
-    if (m_bIsDrawMousePos == true)
+/**
+ * @brief CurveWidget::setZoomParams
+ * @param bIsPause
+ * @param dMaxValue
+ * @param dMinValue
+ */
+void CurveWidget::setZoomParams(bool bIsPause, double dMaxValue, double dMinValue)
+{
+    if (bIsPause == true)
     {
-        Axis* pXAxis = m_pCurve->getXAxis();
-        m_ltMaxZoomVals.push_back(pXAxis->getMaxValue());
-        m_ltMinZoomVals.push_back(pXAxis->getMinValue());
+        m_ltMaxZoomVals.push_back(dMaxValue);
+        m_ltMinZoomVals.push_back(dMinValue);
     }
     else
     {
         /** Set X Axis Manimum & Minimum Value and then Update Scale */
-        m_pCurve->getXAxis()->UpdateAxisScale(m_ltMaxZoomVals.first(), m_ltMinZoomVals.first(), Global::Axis_Hor_TickVal);
-        m_ltMaxZoomVals.clear();
-        m_ltMinZoomVals.clear();
+        if ((m_ltMaxZoomVals.isEmpty() == false) &&
+            (m_ltMinZoomVals.isEmpty() == false))
+        {
+            m_pCurve->getXAxis()->UpdateAxisScale(
+                        m_ltMaxZoomVals.first(),
+                        m_ltMinZoomVals.first(),
+                        Global::Axis_Hor_TickVal);
+
+            m_ltMaxZoomVals.clear();
+            m_ltMinZoomVals.clear();
+        }
         m_nZoomValue = 1000;
     }
 }
-
-
 
 
 

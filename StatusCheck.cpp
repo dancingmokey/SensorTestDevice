@@ -31,13 +31,12 @@ void StatusCheck::run(void)
         /** Check Channel 1 Status */
         if (m_nCH1Status != nLastCH1Status)
         {
-            /** Send Update Channel1 Status Info Signal */
-            emit UpdateCHStatusSignal(Global::CH1_Serial_Name,
-                                   (unsigned char)m_nCH1Status,
-                                   m_dtCH1Catch,
-                                   m_nCH1CatchOffset,
-                                   m_dCH1ExtremumVal);
-
+//            /** Send Update Channel1 Status Info Signal */
+//            emit UpdateCHStatusSignal(Global::CH1_Serial_Name,
+//                                   (unsigned char)m_nCH1Status,
+//                                   m_dtCH1Catch,
+//                                   m_nCH1CatchOffset,
+//                                   m_dCH1ExtremumVal);
             /** Reset Last Status */
             nLastCH1Status = m_nCH1Status;
 
@@ -58,14 +57,12 @@ void StatusCheck::run(void)
         /** Check Channel 2 Data */
         if (m_nCH2Status != nLastCH2Status)
         {
-            /** Send Update Channel2 Status Info Signal */
-            emit UpdateCHStatusSignal(Global::CH2_Serial_Name,
-                                   (unsigned char)m_nCH2Status,
-                                   m_dtCH2Catch,
-                                   m_nCH2CatchOffset,
-                                   m_dCH2ExtremumVal);
-
-
+//            /** Send Update Channel2 Status Info Signal */
+//            emit UpdateCHStatusSignal(Global::CH2_Serial_Name,
+//                                   (unsigned char)m_nCH2Status,
+//                                   m_dtCH2Catch,
+//                                   m_nCH2CatchOffset,
+//                                   m_dCH2ExtremumVal);
             /** Reset Last Status */
             nLastCH2Status = m_nCH2Status;
 
@@ -88,9 +85,10 @@ void StatusCheck::run(void)
             (m_nCH2Status == Global::Status_Catch))
         {
             int nTimeDiff = m_dtCH1Catch.msecsTo(m_dtCH2Catch);
+            int nPosDiff = m_nCH1CatchOffset - m_nCH2CatchOffset;
             if (abs(nTimeDiff) < Global::Catch_Keep_Time)
             {
-                emit UpdateSensorStatusSignal(nTimeDiff);
+                emit UpdateSensorStatusSignal(nPosDiff);
             }
         }
 

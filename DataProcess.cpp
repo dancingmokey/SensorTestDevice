@@ -66,8 +66,35 @@ void DataProcess::run(void)
         {
             if (m_nProcValueCnt >= m_nPausePosition)
             {
-                emit DataProcPauseSignal();
+                double dNewMaxVal = 0.0f;
+                double dNewMinVal = 0.0f;
+
+                if (m_strProcName == Global::CH1_Serial_Name)
+                {
+                    g_mutexCurve1Locker.lock();
+                    dNewMaxVal = m_pCurve1->getXAxis()->getMaxValue();
+                    dNewMinVal = m_pCurve1->getXAxis()->getMinValue();
+                    g_mutexCurve1Locker.unlock();
+                }
+                else if (m_strProcName == Global::CH2_Serial_Name)
+                {
+                    g_mutexCurve2Locker.lock();
+                    dNewMaxVal = m_pCurve2->getXAxis()->getMaxValue();
+                    dNewMinVal = m_pCurve2->getXAxis()->getMinValue();
+                    g_mutexCurve2Locker.unlock();
+                }
+
+                if (m_bIsSendPauseSig == false)
+                {
+                    emit DataProcPauseSignal(m_strProcName, dNewMaxVal, dNewMinVal);
+                    m_bIsSendPauseSig = true;
+                }
+
                 continue;
+            }
+            else
+            {
+                m_bIsSendPauseSig = false;
             }
         }
         else if ((m_bIsCatched == false) &&
@@ -97,6 +124,7 @@ void DataProcess::run(void)
                     int nValue = ((uint8)acDataBuf.at(i));
                     double dValue = (((double)nValue) / 10.0f);
                     pValueList[nValueCount++] = dValue;
+                    m_nProcValueCnt++;
 
                     /** Update Channel Status */
                     dValue = getFilterValue(dValue);
@@ -110,14 +138,12 @@ void DataProcess::run(void)
             {
                 g_mutexCurve1Locker.lock();
                 m_pCurve1->AddSerialData(m_strProcName, NULL, pValueList, nValueCount);
-                m_nProcValueCnt += nValueCount;
                 g_mutexCurve1Locker.unlock();
             }
             else if (m_strProcName == Global::CH2_Serial_Name)
             {
                 g_mutexCurve2Locker.lock();
                 m_pCurve2->AddSerialData(m_strProcName, NULL, pValueList, nValueCount);
-                m_nProcValueCnt += nValueCount;
                 g_mutexCurve2Locker.unlock();
             }
 
@@ -170,19 +196,28 @@ void DataProcess::UpdateChannelStatus(double dCurrValue)
             m_nCatchOffset = m_nProcValueCnt;
             m_dExtremumVal = dCurrValue;
             m_nPausePosition = m_nProcValueCnt + 1000;
+            Curve* pCurve = (m_strProcName == Global::CH1_Serial_Name) ? m_pCurve1 : m_pCurve2;
+            int nOffset = m_nProcValueCnt - pCurve->getXAxis()->getMinValue();
 
             /** Update Channel Status */
             m_pStatusCheck->UpdateChannelData(m_strProcName,
                                               m_nStatus,
                                               m_dtCatch,
-                                              m_nProcValueCnt,
+                                              nOffset,
                                               m_dExtremumVal);
-
-            qDebug() << m_strProcName
-                     << " Catch Pluse at Point "
+#ifndef _DEBUG_OUTPUT
+            /** Debug Output*/
+            qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                     << m_strProcName
+                     << " Catch Pluse at Time "
+                     << m_dtCatch.toString("hh:mm:ss.zzz ")
+                     << " at Point "
                      << m_nProcValueCnt
-                     << " Stop at Point"
-                     << m_nPausePosition;
+                     << ", Procee will Pause at Point "
+                     << m_nPausePosition
+                     << " Offset is "
+                     << nOffset;
+#endif
         }
         /** Keep Status to None if Value not Changed */
         else
@@ -249,22 +284,6 @@ double DataProcess::getFilterValue(double dCurrValue)
 }
 
 /**
- * @brief DataProcess::getPauseStatus
- * @return
- */
-bool DataProcess::getPauseStatus(void)
-{
-    if ((m_bIsCatched == true) &&
-        (m_bIsPause == true) &&
-        (m_nProcValueCnt >= m_nPausePosition))
-    {
-        return true;
-    }
-
-    return false;
-}
-
-/**
  * @brief getProcName
  * @return QString
  */
@@ -282,10 +301,24 @@ bool DataProcess::getEnableRunning() const
     return m_bEnableRunning;
 }
 
-int DataProcess::getPausePosition()
+/**
+ * @brief DataProcess::getPausePosition
+ * @return
+ */
+int DataProcess::getPausePosition(void)
 {
     return m_nPausePosition;
 }
+
+/**
+ * @brief getIsCatched
+ * @return
+ */
+bool DataProcess::getIsCatched(void)
+{
+    return m_bIsCatched;
+}
+
 
 /**
  * @brief setProcName
@@ -321,11 +354,5 @@ void DataProcess::setIsCatched(bool bIsCatched)
 void DataProcess::setPause(bool bIsPause)
 {
     m_bIsPause = bIsPause;
-}
-
-void DataProcess::setPauseCondition(bool bIsPause, int nCatchOffset)
-{
-    m_bIsPause = bIsPause;
-    m_nPausePosition = nCatchOffset;
 }
 

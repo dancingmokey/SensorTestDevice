@@ -154,9 +154,9 @@ void MainWindow::CreateDataProcess(void)
 
     /** Create Connection */
     connect(m_pCH1DataProc,
-            SIGNAL(DataProcPauseSignal()),
+            SIGNAL(DataProcPauseSignal(QString, double, double)),
             this,
-            SLOT(DataProcPauseSlot()));
+            SLOT(DataProcPauseSlot(QString, double, double)));
 
     /** Create Data Process of Channel 2 */
     m_pCH2DataProc = new DataProcess(Global::CH2_Serial_Name,
@@ -168,9 +168,9 @@ void MainWindow::CreateDataProcess(void)
 
     /** Create Connection */
     connect(m_pCH2DataProc,
-            SIGNAL(DataProcPauseSignal()),
+            SIGNAL(DataProcPauseSignal(QString, double, double)),
             this,
-            SLOT(DataProcPauseSlot()));
+            SLOT(DataProcPauseSlot(QString, double, double)));
 }
 
 /**
@@ -228,46 +228,6 @@ void MainWindow::CreateTimer(void)
     m_pUpdateTimer->start(100);
 }
 
-void MainWindow::UpdateInfoWidget(void)
-{
-    if (m_bIsPause == true)
-    {
-        int nCH1Offset = this->m_pCH1DataProc->getPausePosition() -
-                this->ui->Curve1Wgt->getCurve()->getXAxis()->getMinValue();
-        int nCH2Offset = this->m_pCH2DataProc->getPausePosition() -
-                this->ui->Curve2Wgt->getCurve()->getXAxis()->getMinValue();
-
-
-        this->ui->TestInfoWgt->m_strCH1Status = QString("捕获峰值");
-
-
-
-
-        this->ui->TestInfoWgt->m_strCH2Status = QString("捕获峰值");
-
-        this->ui->TestInfoWgt->m_strCH1Status = QString("%1").arg(nCH1Offset);
-        this->ui->TestInfoWgt->m_strCH2Status = QString("%1").arg(nCH2Offset);
-        this->ui->TestInfoWgt->repaint();
-//        this->ui->TestInfoWgt->m_strCH1Value = QString("%1V").arg(QString::number(m_pStatusCheck->m_dCH1ExtremumVal, 'f', 2));
-//        this->ui->TestInfoWgt->m_crCH1Other = Qt::red;
-//        this->ui->TestInfoWgt->m_strCH1Order = nMSDiff > 0 ? QString("+%1ms").arg(nMSDiff) : QString("%1ms").arg(nMSDiff);
-//        this->ui->TestInfoWgt->m_strCH2Status = QString("捕获峰值");
-//        this->ui->TestInfoWgt->m_strCH2Value = QString("%1V").arg(QString::number(m_pStatusCheck->m_dCH2ExtremumVal, 'f', 2));
-//        this->ui->TestInfoWgt->m_crCH2Other = Qt::blue;
-//        this->ui->TestInfoWgt->m_strCH2Order = nMSDiff > 0 ? QString("%1ms").arg(nMSDiff * -1) : QString("+%1ms").arg(nMSDiff * -1);
-
-
-        this->ui->Curve1Wgt->getCurve()->getXAxis()->m_nCatchVal = m_pStatusCheck->m_nCH1CatchOffset;
-        this->ui->Curve2Wgt->getCurve()->getXAxis()->m_nCatchVal = m_pStatusCheck->m_nCH2CatchOffset;
-    }
-    else
-    {
-        this->ui->TestInfoWgt->m_strCH1Status = QString("%1").arg(0);
-        this->ui->TestInfoWgt->m_strCH2Status = QString("%1").arg(0);
-        this->ui->TestInfoWgt->repaint();
-    }
-}
-
 /**
  * @brief on_ZoomInCtrlBtn_clicked
  */
@@ -309,15 +269,31 @@ void MainWindow::on_PauseCtrlBtn_clicked(void)
         m_pCH1DataProc->setPause(true);
         m_pCH2DataProc->setPause(true);
 
-        /** Allow Curve Widget Draw Mouse Position Line */
-        this->ui->Curve1Wgt->setIsDrawMousePos(true);
-        this->ui->Curve2Wgt->setIsDrawMousePos(true);
-
-        /** Update Test Information Widget */
-        UpdateInfoWidget();
+        /** Allow Curve Widget Draw Mouse Position Line when Auto Catch Mode is close */
+        if ((m_bIsAutoCatch == false) ||
+            ((m_bIsAutoCatch == true) &&
+             ((m_pCH1DataProc->getIsCatched() == false) ||
+              (m_pCH2DataProc->getIsCatched() == false))))
+        {
+            Axis* pCurve1XAxis = this->ui->Curve1Wgt->getCurve()->getXAxis();
+            this->ui->Curve1Wgt->setIsDrawMousePos(true);
+            this->ui->Curve1Wgt->setZoomParams(true,
+                                               pCurve1XAxis->getMaxValue(),
+                                               pCurve1XAxis->getMinValue());
+            Axis* pCurve2XAxis = this->ui->Curve2Wgt->getCurve()->getXAxis();
+            this->ui->Curve2Wgt->setIsDrawMousePos(true);
+            this->ui->Curve2Wgt->setZoomParams(true,
+                                               pCurve2XAxis->getMaxValue(),
+                                               pCurve2XAxis->getMinValue());
+        }
 
         /** Change Button Bounder-Image */
-        this->ui->PauseCtrlBtn->setStyleSheet(QString("border-image: url(:/Images/Images/ContinueBtn.png);"));
+        this->ui->PauseCtrlBtn->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/ContinueBtn.png);"));
+
+        /** Change Label Bounder-Image */
+        this->ui->LeftInfoLabel->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/PauseLabel.png);"));
     }
     else
     {
@@ -332,13 +308,31 @@ void MainWindow::on_PauseCtrlBtn_clicked(void)
 
         /** Forbidden Curve Widget Draw Mouse Position Line */
         this->ui->Curve1Wgt->setIsDrawMousePos(false);
+        this->ui->Curve1Wgt->setZoomParams(false, 0.0f, 0.0f);
         this->ui->Curve2Wgt->setIsDrawMousePos(false);
-
-        /** Update Test Information Widget */
-        UpdateInfoWidget();
+        this->ui->Curve2Wgt->setZoomParams(false, 0.0f, 0.0f);
 
         /** Change Button Bounder-Image */
-        this->ui->PauseCtrlBtn->setStyleSheet(QString("border-image: url(:/Images/Images/PauseBtn.png);"));
+        this->ui->PauseCtrlBtn->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/PauseBtn.png);"));
+
+        /** Change Label Bounder-Image */
+        this->ui->LeftInfoLabel->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/RunningLabel.png);"));
+
+        /** Recover Avto Catch Label */
+        if (m_bIsAutoCatch == true)
+        {
+            /** Change Label Bounder-Image */
+            this->ui->RightInfoLabel->setStyleSheet(
+                        QString("border-image: url(:/Images/Images/AutoCatchOpenLabel.png);"));
+        }
+        else
+        {
+            /** Change Label Bounder-Image */
+            this->ui->RightInfoLabel->setStyleSheet(
+                        QString("border-image: url(:/Images/Images/AutoCatchCloseLabel.png);"));
+        }
     }
 }
 
@@ -354,7 +348,12 @@ void MainWindow::on_CatchCtrlBtn_clicked(void)
         m_bIsAutoCatch = true;
 
         /** Change Button Bounder-Image */
-        this->ui->CatchCtrlBtn->setStyleSheet(QString("border-image: url(:/Images/Images/AutoCatchCloseBtn.png);"));
+        this->ui->CatchCtrlBtn->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/AutoCatchCloseBtn.png);"));
+
+        /** Change Label Bounder-Image */
+        this->ui->RightInfoLabel->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/AutoCatchOpenLabel.png);"));
     }
     else
     {
@@ -362,7 +361,12 @@ void MainWindow::on_CatchCtrlBtn_clicked(void)
         m_bIsAutoCatch = false;
 
         /** Change Button Bounder-Image */
-        this->ui->CatchCtrlBtn->setStyleSheet(QString("border-image: url(:/Images/Images/AutoCatchOpenBtn.png);"));
+        this->ui->CatchCtrlBtn->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/AutoCatchOpenBtn.png);"));
+
+        /** Change Label Bounder-Image */
+        this->ui->RightInfoLabel->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/AutoCatchCloseLabel.png);"));
     }
 }
 
@@ -417,13 +421,23 @@ void MainWindow::UpdateSlot(void)
  * @brief DataProcPauseSlot
  * @param strProcName
  */
-void MainWindow::DataProcPauseSlot(void)
+void MainWindow::DataProcPauseSlot(QString strProcName, double dNewMaxVal, double dNewMinVal)
 {
-    if ((m_pCH1DataProc->getPauseStatus() == true) &&
-        (m_pCH2DataProc->getPauseStatus() == true))
+    if (strProcName == Global::CH1_Serial_Name)
     {
-        /** Simulate Pause Button Click Signal */
-        emit this->ui->PauseCtrlBtn->click();
+        if (m_bIsAutoCatch == true)
+        {
+            this->ui->Curve1Wgt->setIsDrawMousePos(true);
+            this->ui->Curve1Wgt->setZoomParams(true, dNewMaxVal, dNewMinVal);
+        }
+    }
+    else if (strProcName == Global::CH2_Serial_Name)
+    {
+        if (m_bIsAutoCatch == true)
+        {
+            this->ui->Curve2Wgt->setIsDrawMousePos(true);
+            this->ui->Curve2Wgt->setZoomParams(true, dNewMaxVal, dNewMinVal);
+        }
     }
 }
 
@@ -481,8 +495,35 @@ void MainWindow::UpdateSensorStatusSlot(int nMSDiff)
             m_pCH2DataProc->setIsCatched(true);
 
             /** Pause Data Process Thread */
-            m_pCH1DataProc->setPause(true);
-            m_pCH2DataProc->setPause(true);
+            emit this->ui->PauseCtrlBtn->click();
+
+            /** Which Channel was First Catch ? */
+            int nCH1Offset = this->m_pCH1DataProc->getPausePosition() -
+                    this->ui->Curve1Wgt->getCurve()->getXAxis()->getMinValue();
+            int nCH2Offset = this->m_pCH2DataProc->getPausePosition() -
+                    this->ui->Curve2Wgt->getCurve()->getXAxis()->getMinValue();
+            if (nMSDiff > 0)
+            {
+                this->ui->LeftInfoLabel->setStyleSheet(
+                            QString("border-image: url(:/Images/Images/CH1Lose.png);"));
+                this->ui->RightInfoLabel->setStyleSheet(
+                            QString("border-image: url(:/Images/Images/CH2Win.png);"));
+            }
+            else
+            {
+                this->ui->LeftInfoLabel->setStyleSheet(
+                            QString("border-image: url(:/Images/Images/CH1Win.png);"));
+                this->ui->RightInfoLabel->setStyleSheet(
+                            QString("border-image: url(:/Images/Images/CH2Lose.png);"));
+            }
+
+            /** Debug Output */
+            qDebug() << "Channel 1 Offset is "
+                     << nCH1Offset
+                     << " and Channel 2 Offset is "
+                     << nCH2Offset
+                     << " Time Diff is"
+                     << nMSDiff;
         }
     }
 }

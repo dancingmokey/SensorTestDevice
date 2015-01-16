@@ -15,5 +15,13 @@
         <file>Images/Battery_Full.png</file>
         <file>Images/Battery_Low.png</file>
         <file>Images/Battery_Medium.png</file>
+        <file>Images/AutoCatchCloseLabel.png</file>
+        <file>Images/AutoCatchOpenLabel.png</file>
+        <file>Images/RunningLabel.png</file>
+        <file>Images/PauseLabel.png</file>
+        <file>Images/CH1Lose.png</file>
+        <file>Images/CH1Win.png</file>
+        <file>Images/CH2Lose.png</file>
+        <file>Images/CH2Win.png</file>
     </qresource>
 </RCC>

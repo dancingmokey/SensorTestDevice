@@ -67,9 +67,6 @@ public:
      */
     void CreateTimer(void);
 
-
-    void UpdateInfoWidget(void);
-
 private slots:
     /**
      * @brief on_ZoomInCtrlBtn_clicked
@@ -100,7 +97,7 @@ private slots:
      * @brief DataProcPauseSlot
      * @param strProcName
      */
-    void DataProcPauseSlot(void);
+    void DataProcPauseSlot(QString strProcName, double dNewMaxVal, double dNewMinVal);
 
     /**
      * @brief UpdateCHStatusSlot

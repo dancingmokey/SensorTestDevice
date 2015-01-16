@@ -4,7 +4,7 @@
 #include <QWSServer>
 #include <QDebug>
 
-#define __PROGRAM_VERSION__     "1.0.0.001"
+#define __PROGRAM_VERSION__     "1.0.0 alpha003"
 
 int main(int argc, char *argv[])
 {
