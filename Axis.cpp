@@ -35,6 +35,7 @@ Axis::~Axis(void)
 
     /** Release All List and Clear them */
     this->ClearElementsList(m_ltTickLines);
+    this->ClearElementsList(m_ltChildTickLines);
     this->ClearElementsList(m_ltGridLines);
     this->ClearElementsList(m_ltLabelRects);
     m_ltLabelTexts.clear();
@@ -70,6 +71,7 @@ void Axis::ResetAxisLayout(void)
 {
     /** Release All List and Clear them */
     this->ClearElementsList(m_ltTickLines);
+    this->ClearElementsList(m_ltChildTickLines);
     this->ClearElementsList(m_ltGridLines);
     this->ClearElementsList(m_ltLabelRects);
     m_ltLabelTexts.clear();
@@ -83,6 +85,7 @@ void Axis::ResetAxisLayout(void)
     {
         /** Vertical Coordinate of Elements */
         double dYPos = dStartY - Global::Tick_Value;
+        double dChildYPos = dStartY - Global::Tick_Value / 2;
 
         /** Travalsal Tick Values List, then Generate Tick Lines/Grid Lines/Label Rectangles */
         for (QList<double>::iterator it = m_ltTickValues.begin();
@@ -94,6 +97,18 @@ void Axis::ResetAxisLayout(void)
 
             /** Storage Tick Line into List */
             m_ltTickLines.push_back(new QLineF(dXPos, dStartY, dXPos, dYPos));
+
+            /** Storage Child Tick Line Into List */
+            double dChildTickValue = m_dTickValue / 10.0f;
+            for (int i = 0; i < 10; ++i)
+            {
+                /** Get New Horizontal Position on Axis Based on Child Tick Value */
+                double dChildValue = *it + dChildTickValue * i;
+                double dChildXPos = dStartX + this->GetPositionByValue(dChildValue);
+
+                /** Storage Tick Line into List */
+                m_ltChildTickLines.push_back(new QLineF(dChildXPos, dStartY, dChildXPos, dChildYPos));
+            }
 
             /** Storage Grid Line into List */
             m_ltGridLines.push_back(new QLineF(dXPos, dStartY, dXPos, 0));
@@ -114,6 +129,7 @@ void Axis::ResetAxisLayout(void)
     {
         /** Horizontal Coordinate of Elements */
         double dXPos = dStartX + Global::Tick_Value;
+        double dChildXPos = dStartX + Global::Tick_Value / 2;
 
         /** Travalsal Tick Values List, then Generate Tick Lines/Grid Lines/Label Rectangles */
         for (QList<double>::iterator it = m_ltTickValues.begin();
@@ -125,6 +141,18 @@ void Axis::ResetAxisLayout(void)
 
             /** Storage Tick Line into List */
             m_ltTickLines.push_back(new QLineF(dStartX, dYPos, dXPos, dYPos));
+
+            /** Storage Child Tick Line Into List */
+            double dChildTickValue = m_dTickValue / 10.0f;
+            for (int i = 0; i < 10; ++i)
+            {
+                /** Get New Horizontal Position on Axis Based on Child Tick Value */
+                double dChildValue = *it + dChildTickValue * i;
+                double dChildYPos = dStartY - this->GetPositionByValue(dChildValue);
+
+                /** Storage Tick Line into List */
+                m_ltChildTickLines.push_back(new QLineF(dStartX, dChildYPos, dChildXPos, dChildYPos));
+            }
 
             /** Storage Grid Line into List */
             m_ltGridLines.push_back(new QLineF(dStartX, dYPos, 1280, dYPos));
@@ -198,6 +226,17 @@ double Axis::GetPositionByValue(double dValue)
 }
 
 /**
+ * @brief GetValueByPosition
+ * @param dPosition
+ * @return
+ */
+double Axis::GetValueByPosition(double dPosition)
+{
+    /** return Value in dPosition */
+    return (dPosition * m_dScaleValue + m_dMinValue);
+}
+
+/**
  * @brief getAxisLine
  * @return QLineF* : Line of Axis
  */
@@ -213,6 +252,15 @@ QLineF* Axis::getAxisLine(void) const
 QList<QLineF*> Axis::getTickLines(void) const
 {
     return m_ltTickLines;
+}
+
+/**
+ * @brief getChildTickLines
+ * @return QList<QLineF*> : List of Child Tick Lines
+ */
+QList<QLineF*> Axis::getChildTickLines(void) const
+{
+    return m_ltChildTickLines;
 }
 
 /**

@@ -13,7 +13,7 @@ TEMPLATE = app
 
 DEFINES += _TTY_POSIX_
 #DEFINES += _DEBUG_SIMULATE
-DEFINES += _DEBUG_OUTPUT
+#DEFINES += _DEBUG_OUTPUT
 
 
 SOURCES += main.cpp\
@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     SerialPort/posix_qextserialport.cpp \
     SerialPort/qextserialbase.cpp \
     DataProcess.cpp \
-    StatusCheck.cpp
+    StatusCheck.cpp \
+    BatteryMonitor.cpp
 
 HEADERS  += MainWindow.h \
     Serial.h \
@@ -41,7 +42,8 @@ HEADERS  += MainWindow.h \
     SerialPort/posix_qextserialport.h \
     SerialPort/qextserialbase.h \
     DataProcess.h \
-    StatusCheck.h
+    StatusCheck.h \
+    BatteryMonitor.h
 
 FORMS    += MainWindow.ui
 

@@ -63,6 +63,13 @@ public:
      */
     double GetPositionByValue(double dValue);
 
+    /**
+     * @brief GetValueByPosition
+     * @param dPosition
+     * @return
+     */
+    double GetValueByPosition(double dPosition);
+
 public:
     /**
      * @brief getAxisLine
@@ -75,6 +82,12 @@ public:
      * @return QList<QLineF*> : List of Tick Lines
      */
     QList<QLineF*> getTickLines(void) const;
+
+    /**
+     * @brief getChildTickLines
+     * @return QList<QLineF*> : List of Child Tick Lines
+     */
+    QList<QLineF*> getChildTickLines(void) const;
 
     /**
      * @brief getGridLines
@@ -172,6 +185,11 @@ private:
      * @brief m_ltTickLines : QList<QLineF*> : List of Tick Lines
      */
     QList<QLineF*> m_ltTickLines;
+
+    /**
+     * @brief m_ltChildTickLines : QList<QLineF*> : List of Child Tick Lines
+     */
+    QList<QLineF*> m_ltChildTickLines;
 
     /**
      * @brief m_ltGridLines : QList<QLineF*> : List of Grid Lines

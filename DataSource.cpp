@@ -133,7 +133,7 @@ void DataSource::run(void)
                 g_mutexCurve2Locker.unlock();
             }
 
-#ifndef _DEBUG_OUTPUT
+#ifdef _DEBUG_OUTPUT
             /** Debug Output */
             qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
                      << " Loop Times "

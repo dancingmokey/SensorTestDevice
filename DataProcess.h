@@ -43,8 +43,18 @@ public:
      */
     void UpdateChannelStatus(double dCurrValue);
 
+    /**
+     * @brief getFilterValue
+     * @param dCurrValue
+     * @return
+     */
     double getFilterValue(double dCurrValue);
 
+    /**
+     * @brief getPauseStatus
+     * @return
+     */
+    bool getPauseStatus(void);
 
 
 public:
@@ -60,6 +70,10 @@ public:
      */
     bool getEnableRunning(void) const;
 
+    /**
+     * @brief getPausePosition
+     * @return
+     */
     int getPausePosition();
 
     /**
@@ -98,6 +112,11 @@ signals:
      * @brief DataProcUpdateSignal
      */
     void DataProcUpdateSignal(QString);
+
+    /**
+     * @brief DataProcPauseSignal
+     */
+    void DataProcPauseSignal(void);
 
     /**
      * @brief DataProcErrorSignal

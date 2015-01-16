@@ -66,6 +66,7 @@ void DataProcess::run(void)
         {
             if (m_nProcValueCnt >= m_nPausePosition)
             {
+                emit DataProcPauseSignal();
                 continue;
             }
         }
@@ -120,7 +121,7 @@ void DataProcess::run(void)
                 g_mutexCurve2Locker.unlock();
             }
 
-#ifndef _DEBUG_OUTPUT
+#ifdef _DEBUG_OUTPUT
             /** Debug Output */
             qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
                      << " Loop Times "
@@ -198,7 +199,7 @@ void DataProcess::UpdateChannelStatus(double dCurrValue)
             /** Change Status to None Only when Catch Status keep Time loger than 300ms */
             if (m_dtCatch.msecsTo(dtCurr) > Global::Catch_Keep_Time)
             {
-#ifndef _DEBUG_OUTPUT
+#ifdef _DEBUG_OUTPUT
                 qDebug() << m_strProcName
                          << " Status Changed from Catch to None "
                          << "Catch Time = "
@@ -247,6 +248,21 @@ double DataProcess::getFilterValue(double dCurrValue)
     return dCurrValue;
 }
 
+/**
+ * @brief DataProcess::getPauseStatus
+ * @return
+ */
+bool DataProcess::getPauseStatus(void)
+{
+    if ((m_bIsCatched == true) &&
+        (m_bIsPause == true) &&
+        (m_nProcValueCnt >= m_nPausePosition))
+    {
+        return true;
+    }
+
+    return false;
+}
 
 /**
  * @brief getProcName

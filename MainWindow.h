@@ -3,9 +3,11 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QEvent>
 #include "DataSource.h"
 #include "DataProcess.h"
 #include "StatusCheck.h"
+#include "BatteryMonitor.h"
 
 namespace Ui {
 class MainWindow;
@@ -39,6 +41,11 @@ public:
      * @brief CreateCurves
      */
     void CreateCurves(void);
+
+    /**
+     * @brief CreateBatteryMonitor
+     */
+    void CreateBatteryMonitor(void);
 
     /**
      * @brief CreateStatusCheck
@@ -90,6 +97,12 @@ private slots:
     void UpdateSlot(void);
 
     /**
+     * @brief DataProcPauseSlot
+     * @param strProcName
+     */
+    void DataProcPauseSlot(void);
+
+    /**
      * @brief UpdateCHStatusSlot
      * @param strCHName
      * @param nCHStatus
@@ -109,6 +122,19 @@ private slots:
      */
     void UpdateSensorStatusSlot(int nMSDiff);
 
+    /**
+     * @brief UpdateBatteryStatusSlot
+     * @param nBattryCap
+     */
+    void UpdateBatteryStatusSlot(int nBatteryCap);
+
+protected:
+    /**
+     * @brief mouseMoveEvent
+     * @param e
+     */
+    void mouseMoveEvent(QMouseEvent *e);
+
 private:
     /**
      * @brief m_bIsPause : bool : Is Pause Display ot Not
@@ -119,6 +145,11 @@ private:
      * @brief m_bIsAutoCatch : bool : Is Auto Catch ot Manually
      */
     bool m_bIsAutoCatch;
+
+    /**
+     * @brief m_pBatteryMonitor
+     */
+    BatteryMonitor* m_pBatteryMonitor;
 
     /**
      * @brief m_pCH1DataSrc : DataSource* : Channel 1 Data Source
@@ -140,12 +171,20 @@ private:
      */
     DataProcess* m_pCH2DataProc;
 
+    /**
+     * @brief m_pStatusCheck
+     */
     StatusCheck* m_pStatusCheck;
 
     /**
      * @brief m_pUpdateTimer : QTimer* : Timer of Update UI
      */
     QTimer* m_pUpdateTimer;
+
+    /**
+     * @brief m_ptMousePos
+     */
+    QPoint m_ptMousePos;
 
 private:
     /**

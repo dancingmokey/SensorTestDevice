@@ -11,6 +11,7 @@ CurveWidget::CurveWidget(QWidget *parent) :
                                     this->rect().top(),
                                     this->rect().width(),
                                     this->rect().height()));
+    m_nZoomValue = 1000;
 }
 
 /**
@@ -31,28 +32,29 @@ void CurveWidget::resizeEvent(QResizeEvent *e)
  */
 void CurveWidget::paintEvent(QPaintEvent *e)
 {
-    /**  Declare Painter and then Set Pen */
-    QPainter vPainter(this);
-    vPainter.setBrush(Qt::black);
-    vPainter.setPen(QPen(Qt::black, 2, Qt::DotLine, Qt::FlatCap));
-
-    /** Draw Widget Background */
-//    vPainter.drawRect(this->rect());
+    /** Draw Ticks of X&Y Axis */
+    this->DrawGrids();
 
     /** Draw Ticks of X&Y Axis */
-    this->DrawGrids() ;
+    this->DrawTicks();
 
-    /** Draw Ticks of X&Y Axis */
-    this->DrawTicks() ;
+    /** Draw Child Ticks of X&Y Axis */
+    this->DrawChildTicks();
 
     /** Draw X&Y Axis */
-    this->DrawAxes() ;
+    this->DrawAxes();
 
     /** Draw Labels of X&Y Axis */
     this->DrawLabels();
 
     /** Draw Serials */
     this->DrawSerials();
+
+    /** */
+    if (m_bIsDrawMousePos == true)
+    {
+        this->DrawMousePosLine();
+    }
 }
 
 /**
@@ -97,6 +99,38 @@ void CurveWidget::DrawTicks(void)
     QList<QLineF*> ltYAxisTicks = m_pCurve->getYAxis()->getTickLines();
     for (QList<QLineF*>::iterator it =  ltYAxisTicks.begin();
          it != ltYAxisTicks.end();
+         it++)
+    {
+        /** Draw Line */
+        QLineF* pLine = *it;
+        vPainter.drawLine(*pLine);
+    }
+}
+
+/**
+ * @brief Draw Child Ticks
+ */
+void CurveWidget::DrawChildTicks(void)
+{
+    /** Declare Painter and then Set Pen */
+    QPainter vPainter(this);
+    vPainter.setPen(QPen(Qt::gray, 1, Qt::SolidLine, Qt::FlatCap));
+
+    /** Draw X Axis Ticks */
+    QList<QLineF*> ltChildXAxisTicks = m_pCurve->getXAxis()->getChildTickLines();
+    for (QList<QLineF*>::iterator it =  ltChildXAxisTicks.begin();
+         it != ltChildXAxisTicks.end();
+         it++)
+    {
+        /** Draw Line */
+        QLineF* pLine = *it;
+        vPainter.drawLine(*pLine);
+    }
+
+    /** Draw Y Axis Ticks */
+    QList<QLineF*> ltChildYAxisTicks = m_pCurve->getYAxis()->getChildTickLines();
+    for (QList<QLineF*>::iterator it =  ltChildYAxisTicks.begin();
+         it != ltChildYAxisTicks.end();
          it++)
     {
         /** Draw Line */
@@ -239,6 +273,29 @@ void CurveWidget::DrawSerials(void)
 }
 
 /**
+ * @brief Draw Mouse Position Line
+ */
+void CurveWidget::DrawMousePosLine(void)
+{
+    /** */
+    if (m_ptMousePos.x() < this->getCurve()->getYAxis()->getAxisLine()->p1().x())
+    {
+        return;
+    }
+
+    /** Declare Painter and then Set Pen */
+    QPainter vPainter(this);
+    vPainter.setPen(QPen(Qt::cyan, 3, Qt::DotLine, Qt::FlatCap));
+
+    /** */
+    QLine lnVertical = QLine(QPoint(m_ptMousePos.x(), this->rect().top()),
+                             QPoint(m_ptMousePos.x(), this->getCurve()->getXAxis()->getAxisLine()->p1().y()));
+
+    /** */
+    vPainter.drawLine(lnVertical);
+}
+
+/**
  * @brief UpdateCurve
  * @param strSerialName : QString : Serial Name
  */
@@ -294,6 +351,98 @@ void CurveWidget::UpdateCurve(QString strSerialName,
 }
 
 /**
+ * @brief CurveWidget::ZoomInOperation
+ */
+void CurveWidget::ZoomInOperation(void)
+{
+    /** Check Zoom Value */
+    m_nZoomValue -= 200;
+    if (m_nZoomValue <= 200)
+    {
+        return;
+    }
+
+    /** Calculate New Maximum & Minimum Values */
+    Axis* pCurveXAxis = this->getCurve()->getXAxis();
+    double dNewMaxValue = m_dMousePosVal + m_nZoomValue;
+    dNewMaxValue = (dNewMaxValue > pCurveXAxis->getMaxValue()) ? pCurveXAxis->getMaxValue() : dNewMaxValue;
+    double dNewMinValue = m_dMousePosVal - m_nZoomValue;
+    dNewMinValue = (dNewMinValue < pCurveXAxis->getMinValue()) ? pCurveXAxis->getMinValue() : dNewMinValue;
+
+    /** Update Stack */
+    m_ltMaxZoomVals.push_back(dNewMaxValue);
+    m_ltMinZoomVals.push_back(dNewMinValue);
+
+#ifdef _DEBUG_OUTPUT
+    /** Debug Output */
+    qDebug() << "Zoom In Operation Update Axis Scale, Now Zoom Value is "
+             << m_nZoomValue
+             << " Mouse Position Value is "
+             << m_dMousePosVal
+             << " Max Value Changed from "
+             << pCurveXAxis->getMaxValue()
+             << " to "
+             << dNewMaxValue
+             << " Min Value Changed from "
+             << pCurveXAxis->getMinValue()
+             << " to "
+             << dNewMinValue;
+#endif
+
+    /** Set X Axis Manimum & Minimum Value and then Update Scale */
+    pCurveXAxis->UpdateAxisScale(dNewMaxValue, dNewMinValue, Global::Axis_Hor_TickVal);
+    m_ptMousePos.setX(pCurveXAxis->GetValueByPosition(m_dMousePosVal));
+
+    /** Repaint Curve Widget */
+    this->repaint();
+}
+
+/**
+ * @brief CurveWidget::ZoomOutOperation
+ */
+void CurveWidget::ZoomOutOperation(void)
+{
+    /** Check Zoom Value */
+    m_nZoomValue += 200;
+    if (m_nZoomValue >= 1000)
+    {
+        m_nZoomValue = 1000;
+    }
+
+    /** Recover to the Last Change */
+    double dNewMaxValue = m_ltMaxZoomVals.last();
+    double dNewMinValue = m_ltMinZoomVals.last();
+
+    /** Remain thr Original Max&Min Values */
+    if ((m_ltMaxZoomVals.size() > 1) &&
+        (m_ltMinZoomVals.size() > 1))
+    {
+        m_ltMaxZoomVals.pop_back();
+        m_ltMinZoomVals.pop_back();
+    }
+
+#ifdef _DEBUG_OUTPUT
+    /** Debug Output */
+    qDebug() << "Zoom Out Operation Update Axis Scale, Max Value Changed from "
+             << m_pCurve->getXAxis()->getMaxValue()
+             << " to "
+             << dNewMaxValue
+             << " Min Value Changed from "
+             << m_pCurve->getXAxis()->getMinValue()
+             << " to "
+             << dNewMinValue;
+#endif
+
+    /** Set X Axis Manimum & Minimum Value and then Update Scale */
+    Axis* pCurveXAxis = m_pCurve->getXAxis();
+    pCurveXAxis->UpdateAxisScale(dNewMaxValue, dNewMinValue, Global::Axis_Hor_TickVal);
+    m_ptMousePos.setX(pCurveXAxis->GetValueByPosition(m_dMousePosVal));
+
+    /** Repaint Curve Widget */
+    this->repaint();
+}
+
+/**
  * @brief getCurve
  * @return Curve* : Curve Pointer
  */
@@ -302,9 +451,52 @@ Curve* CurveWidget::getCurve() const
     return m_pCurve;
 }
 
+/**
+ * @brief getMousPos
+ */
+QPoint CurveWidget::getMousePos(void)
+{
+    return m_ptMousePos;
+}
 
+/**
+ * @brief setMousPos
+ * @param ptMousePos
+ */
+void CurveWidget::setMousePos(QPoint ptMousePos)
+{
+    /** Set Mouse Position */
+    m_ptMousePos = ptMousePos;
 
+    /** Get Variables */
+    Axis* pCurveXAxis = this->getCurve()->getXAxis();
+    int nMousePosX = m_ptMousePos.x() - pCurveXAxis->getAxisLine()->p1().x();
+    m_dMousePosVal = pCurveXAxis->GetValueByPosition((double)nMousePosX);
+}
 
+/**
+ * @brief setIsDrawMousePos
+ * @param bIsDrawMousePos
+ */
+void CurveWidget::setIsDrawMousePos(bool bIsDrawMousePos)
+{
+    m_bIsDrawMousePos = bIsDrawMousePos;
+
+    if (m_bIsDrawMousePos == true)
+    {
+        Axis* pXAxis = m_pCurve->getXAxis();
+        m_ltMaxZoomVals.push_back(pXAxis->getMaxValue());
+        m_ltMinZoomVals.push_back(pXAxis->getMinValue());
+    }
+    else
+    {
+        /** Set X Axis Manimum & Minimum Value and then Update Scale */
+        m_pCurve->getXAxis()->UpdateAxisScale(m_ltMaxZoomVals.first(), m_ltMinZoomVals.first(), Global::Axis_Hor_TickVal);
+        m_ltMaxZoomVals.clear();
+        m_ltMinZoomVals.clear();
+        m_nZoomValue = 1000;
+    }
+}
 
 
 

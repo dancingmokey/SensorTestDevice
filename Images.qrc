@@ -12,5 +12,8 @@
         <file>Images/BackGround.png</file>
         <file>Images/AutoCatchOpenBtn.png</file>
         <file>Images/AutoCatchCloseBtn.png</file>
+        <file>Images/Battery_Full.png</file>
+        <file>Images/Battery_Low.png</file>
+        <file>Images/Battery_Medium.png</file>
     </qresource>
 </RCC>

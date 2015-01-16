@@ -50,6 +50,11 @@ private:
     void DrawTicks(void);
 
     /**
+     * @brief Draw Child Ticks
+     */
+    void DrawChildTicks(void);
+
+    /**
      * @brief Draw Grids
      */
     void DrawGrids(void);
@@ -63,6 +68,11 @@ private:
      * @brief Draw Labels
      */
     void DrawLabels(void);
+
+    /**
+     * @brief DrawMousePosLine
+     */
+    void DrawMousePosLine(void);
 
 public:
     /**
@@ -102,6 +112,16 @@ public:
                      double* dYValueList,
                      int nCount);
 
+    /**
+     * @brief ZoomInOperation
+     */
+    void ZoomInOperation(void);
+
+    /**
+     * @brief ZoomOutOperation
+     */
+    void ZoomOutOperation(void);
+
 public:
     /**
      * @brief getCurve
@@ -109,11 +129,58 @@ public:
      */
     Curve* getCurve(void) const;
 
+    /**
+     * @brief getMousPos
+     */
+    QPoint getMousePos(void);
+
+    /**
+     * @brief setMousPos
+     * @param ptMousePos
+     */
+    void setMousePos(QPoint ptMousePos);
+
+    /**
+     * @brief setIsDrawMousePos
+     * @param bIsDrawMousePos
+     */
+    void setIsDrawMousePos(bool bIsDrawMousePos);
+
 private:
     /**
      * @brief m_pCurve
      */
     Curve* m_pCurve;
+
+    /**
+     * @brief m_ptMousePos
+     */
+    QPoint m_ptMousePos;
+
+    /**
+     * @brief m_dMousePosVal
+     */
+    double m_dMousePosVal;
+
+    /**
+     * @brief m_bIsDrawMousePos
+     */
+    bool m_bIsDrawMousePos;
+
+    /**
+     * @brief m_nZoomValue
+     */
+    int m_nZoomValue;
+
+    /**
+     * @brief m_ltMinZoomVals
+     */
+    QList<double> m_ltMinZoomVals;
+
+    /**
+     * @brief m_ltMaxZoomVals
+     */
+    QList<double> m_ltMaxZoomVals;
 
 };
 

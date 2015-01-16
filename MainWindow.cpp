@@ -19,8 +19,14 @@ MainWindow::MainWindow(QWidget *parent) :
     /** Setup UI of Main Window */
     ui->setupUi(this);
 
+    /** ? */
+    this->setAttribute(Qt::WA_AcceptTouchEvents);
+
     /** Create Curves */
     this->CreateCurves();
+
+    /** Create Battery Monitor */
+    this->CreateBatteryMonitor();
 
     /** Create StatusCheck */
     this->CreateStatusCheck();
@@ -37,6 +43,9 @@ MainWindow::MainWindow(QWidget *parent) :
     /** Create Mainwindow Repaint Timer */
     g_dtLastUpDate = QTime::currentTime();
     this->CreateTimer();
+
+    /** set Mouse Tracking */
+    this->setMouseTracking(true);
 }
 
 /**
@@ -93,6 +102,23 @@ void MainWindow::CreateCurves(void)
 }
 
 /**
+ * @brief CreateBatteryMonitor
+ */
+void MainWindow::CreateBatteryMonitor(void)
+{
+    /** Create Battery Monitor */
+    m_pBatteryMonitor = new BatteryMonitor(this);
+    m_pBatteryMonitor->setEnableRunning(true);
+    m_pBatteryMonitor->start();
+
+    /** Create Connection */
+    connect(m_pBatteryMonitor,
+            SIGNAL(UpdateBatteryStatusSignal(int)),
+            this,
+            SLOT(UpdateBatteryStatusSlot(int)));
+}
+
+/**
  * @brief CreateStatusCheck
  */
 void MainWindow::CreateStatusCheck(void)
@@ -126,6 +152,12 @@ void MainWindow::CreateDataProcess(void)
     m_pCH1DataProc->setEnableRunning(true);
     m_pCH1DataProc->start();
 
+    /** Create Connection */
+    connect(m_pCH1DataProc,
+            SIGNAL(DataProcPauseSignal()),
+            this,
+            SLOT(DataProcPauseSlot()));
+
     /** Create Data Process of Channel 2 */
     m_pCH2DataProc = new DataProcess(Global::CH2_Serial_Name,
                                      ui->Curve1Wgt->getCurve(),
@@ -133,6 +165,12 @@ void MainWindow::CreateDataProcess(void)
                                      m_pStatusCheck);
     m_pCH2DataProc->setEnableRunning(true);
     m_pCH2DataProc->start();
+
+    /** Create Connection */
+    connect(m_pCH2DataProc,
+            SIGNAL(DataProcPauseSignal()),
+            this,
+            SLOT(DataProcPauseSlot()));
 }
 
 /**
@@ -235,42 +273,11 @@ void MainWindow::UpdateInfoWidget(void)
  */
 void MainWindow::on_ZoomInCtrlBtn_clicked(void)
 {
-    if (m_bIsPause == true /*&&
-        m_bIsAutoCatch == true*/)
+    if (m_bIsPause == true)
     {
-        int nCurve1MaxVal = this->ui->Curve1Wgt->getCurve()->getXAxis()->getMaxValue();
-        int nCurve1MinVal = this->ui->Curve1Wgt->getCurve()->getXAxis()->getMinValue();
-
-        nCurve1MaxVal -= 100;
-        nCurve1MinVal += 100;
-
-        if (nCurve1MaxVal - nCurve1MinVal <= 200)
-        {
-            return;
-        }
-        else
-        {
-            this->ui->Curve1Wgt->getCurve()->getXAxis()->UpdateAxisScale(nCurve1MaxVal, nCurve1MinVal, Global::Axis_Hor_TickVal);
-
-            this->ui->Curve1Wgt->repaint();
-        }
-
-        int nCurve2MaxVal = this->ui->Curve2Wgt->getCurve()->getXAxis()->getMaxValue();
-        int nCurve2MinVal = this->ui->Curve2Wgt->getCurve()->getXAxis()->getMinValue();
-
-        nCurve2MaxVal -= 100;
-        nCurve2MinVal += 100;
-
-        if (nCurve2MaxVal - nCurve2MinVal <= 200)
-        {
-            return;
-        }
-        else
-        {
-            this->ui->Curve2Wgt->getCurve()->getXAxis()->UpdateAxisScale(nCurve2MaxVal, nCurve2MinVal, Global::Axis_Hor_TickVal);
-
-            this->ui->Curve2Wgt->repaint();
-        }
+        /** Set Widget Zoom Value of Curve 1 & 2 */
+        this->ui->Curve1Wgt->ZoomInOperation();
+        this->ui->Curve2Wgt->ZoomInOperation();
     }
 }
 
@@ -279,46 +286,11 @@ void MainWindow::on_ZoomInCtrlBtn_clicked(void)
  */
 void MainWindow::on_ZoomOutCtrlBtn_clicked(void)
 {
-    if (m_bIsPause == true /*&&
-        m_bIsAutoCatch == true*/)
+    if (m_bIsPause == true)
     {
-        int nCurve1MaxVal = this->ui->Curve1Wgt->getCurve()->getXAxis()->getMaxValue();
-        int nCurve1MinVal = this->ui->Curve1Wgt->getCurve()->getXAxis()->getMinValue();
-
-        nCurve1MaxVal += 100;
-        nCurve1MinVal -= 100;
-
-        if (nCurve1MaxVal - nCurve1MinVal > 2000)
-        {
-            return;
-        }
-        else
-        {
-            this->ui->Curve1Wgt->getCurve()->getXAxis()->UpdateAxisScale(nCurve1MaxVal, nCurve1MinVal, Global::Axis_Hor_TickVal);
-
-            this->ui->Curve1Wgt->repaint();
-        }
-
-
-
-
-
-        int nCurve2MaxVal = this->ui->Curve2Wgt->getCurve()->getXAxis()->getMaxValue();
-        int nCurve2MinVal = this->ui->Curve2Wgt->getCurve()->getXAxis()->getMinValue();
-
-        nCurve2MaxVal += 100;
-        nCurve2MinVal -= 100;
-
-        if (nCurve2MaxVal - nCurve2MinVal > 2000)
-        {
-            return;
-        }
-        else
-        {
-            this->ui->Curve2Wgt->getCurve()->getXAxis()->UpdateAxisScale(nCurve2MaxVal, nCurve2MinVal, Global::Axis_Hor_TickVal);
-
-            this->ui->Curve2Wgt->repaint();
-        }
+        /** Set Widget Zoom Value of Curve 1 & 2 */
+        this->ui->Curve1Wgt->ZoomOutOperation();
+        this->ui->Curve2Wgt->ZoomOutOperation();
     }
 }
 
@@ -333,11 +305,15 @@ void MainWindow::on_PauseCtrlBtn_clicked(void)
         /** Reset Pause Flag */
         m_bIsPause = true;
 
-        /** */
+        /** Pause Data Process Thread */
         m_pCH1DataProc->setPause(true);
         m_pCH2DataProc->setPause(true);
 
-        /** */
+        /** Allow Curve Widget Draw Mouse Position Line */
+        this->ui->Curve1Wgt->setIsDrawMousePos(true);
+        this->ui->Curve2Wgt->setIsDrawMousePos(true);
+
+        /** Update Test Information Widget */
         UpdateInfoWidget();
 
         /** Change Button Bounder-Image */
@@ -348,13 +324,17 @@ void MainWindow::on_PauseCtrlBtn_clicked(void)
         /** Reset Pause Flag */
         m_bIsPause = false;
 
-        /** */
+        /** Restart Data Process Thread */
         m_pCH1DataProc->setPause(false);
         m_pCH1DataProc->setIsCatched(false);
         m_pCH2DataProc->setPause(false);
         m_pCH2DataProc->setIsCatched(false);
 
-        /** */
+        /** Forbidden Curve Widget Draw Mouse Position Line */
+        this->ui->Curve1Wgt->setIsDrawMousePos(false);
+        this->ui->Curve2Wgt->setIsDrawMousePos(false);
+
+        /** Update Test Information Widget */
         UpdateInfoWidget();
 
         /** Change Button Bounder-Image */
@@ -391,7 +371,7 @@ void MainWindow::on_CatchCtrlBtn_clicked(void)
  */
 void MainWindow::UpdateSlot(void)
 {
-#ifndef _DEBUG_OUTPUT
+#ifdef _DEBUG_OUTPUT
     /** Get Start Time */
     QTime vStartTime = QTime::currentTime();
 #endif
@@ -420,7 +400,7 @@ void MainWindow::UpdateSlot(void)
     /** Repaint Test Info Widget */
     this->ui->TestInfoWgt->repaint();
 
-#ifndef _DEBUG_OUTPUT
+#ifdef _DEBUG_OUTPUT
     /** Get End Time & Repaint Used Time */
     QTime vEndTime = QTime::currentTime();
     int nMSecond = vStartTime.msecsTo(vEndTime);
@@ -431,6 +411,20 @@ void MainWindow::UpdateSlot(void)
              << nMSecond
              << " ms";
 #endif
+}
+
+/**
+ * @brief DataProcPauseSlot
+ * @param strProcName
+ */
+void MainWindow::DataProcPauseSlot(void)
+{
+    if ((m_pCH1DataProc->getPauseStatus() == true) &&
+        (m_pCH2DataProc->getPauseStatus() == true))
+    {
+        /** Simulate Pause Button Click Signal */
+        emit this->ui->PauseCtrlBtn->click();
+    }
 }
 
 /**
@@ -452,50 +446,6 @@ void MainWindow::UpdateCHStatusSlot(QString strCHName,
     {
         return;
     }
-
-//    /** Channel 1 Status Update */
-//    if (strCHName == Global::CH1_Serial_Name)
-//    {
-//        /** Status Changed to None */
-//        if (nCHStatus == Global::Status_None)
-//        {
-//            this->ui->TestInfoWgt->m_strCH1Status = QString("无峰值");
-//            this->ui->TestInfoWgt->m_strCH1Value = QString("");
-
-//            this->ui->TestInfoWgt->m_crCH1Other = Qt::white;
-//        }
-//        /** Status Changed to Catch */
-//        else if (nCHStatus == Global::Status_Catch)
-//        {
-//            this->ui->TestInfoWgt->m_strCH1Status = QString("捕获峰值");
-//            this->ui->TestInfoWgt->m_strCH1Value = QString("%1V").arg(QString::number(dCHExtremumVal, 'f', 2));
-
-//            this->ui->TestInfoWgt->m_crCH1Other = Qt::red;
-//        }
-//    }
-//    /** Channel 2 Status Update */
-//    else if (strCHName == Global::CH2_Serial_Name)
-//    {
-//        /** Status Changed to None */
-//        if (nCHStatus == Global::Status_None)
-//        {
-//            this->ui->TestInfoWgt->m_strCH2Status = QString("无峰值");
-//            this->ui->TestInfoWgt->m_strCH2Value = QString("");
-
-//            this->ui->TestInfoWgt->m_crCH2Other = Qt::white;
-//        }
-//        /** Status Changed to Catch */
-//        else if (nCHStatus == Global::Status_Catch)
-//        {
-//            this->ui->TestInfoWgt->m_strCH2Status = QString("捕获峰值");
-//            this->ui->TestInfoWgt->m_strCH2Value = QString("%1V").arg(QString::number(dCHExtremumVal, 'f', 2));
-
-//            this->ui->TestInfoWgt->m_crCH2Other = Qt::blue;
-//        }
-//    }
-
-//    /** Repaint Test Info Widget */
-//    this->ui->TestInfoWgt->repaint();
 
 #ifdef _DEBUG_OUTPUT
     /** Debug Output */
@@ -520,49 +470,106 @@ void MainWindow::UpdateCHStatusSlot(QString strCHName,
  */
 void MainWindow::UpdateSensorStatusSlot(int nMSDiff)
 {
-    /** */
+    /** Current Mode is Auto Catch */
     if (m_bIsAutoCatch == true)
     {
-        /** */
+        /** Now the Process is Runninng */
         if (m_bIsPause == false)
         {
+            /** Set Data Process Catched Flag */
             m_pCH1DataProc->setIsCatched(true);
             m_pCH2DataProc->setIsCatched(true);
 
-            emit this->ui->PauseCtrlBtn->click();
+            /** Pause Data Process Thread */
+            m_pCH1DataProc->setPause(true);
+            m_pCH2DataProc->setPause(true);
         }
-    }
-
-
-
-    if (m_bIsAutoCatch == true)
-    {
-        if (m_bIsPause == false)
-        {
-
-        }
-//        {
-//            emit this->ui->PauseCtrlBtn->click();
-
-//            this->ui->TestInfoWgt->m_strCH1Status = QString("捕获峰值");
-//            this->ui->TestInfoWgt->m_strCH1Value = QString("%1V").arg(QString::number(m_pStatusCheck->m_dCH1ExtremumVal, 'f', 2));
-//            this->ui->TestInfoWgt->m_crCH1Other = Qt::red;
-//            this->ui->TestInfoWgt->m_strCH1Order = nMSDiff > 0 ? QString("+%1ms").arg(nMSDiff) : QString("%1ms").arg(nMSDiff);
-//            this->ui->TestInfoWgt->m_strCH2Status = QString("捕获峰值");
-//            this->ui->TestInfoWgt->m_strCH2Value = QString("%1V").arg(QString::number(m_pStatusCheck->m_dCH2ExtremumVal, 'f', 2));
-//            this->ui->TestInfoWgt->m_crCH2Other = Qt::blue;
-//            this->ui->TestInfoWgt->m_strCH2Order = nMSDiff > 0 ? QString("%1ms").arg(nMSDiff * -1) : QString("+%1ms").arg(nMSDiff * -1);
-//            this->ui->TestInfoWgt->repaint();
-
-//            this->ui->Curve1Wgt->getCurve()->getXAxis()->m_nCatchVal = m_pStatusCheck->m_nCH1CatchOffset;
-//            this->ui->Curve2Wgt->getCurve()->getXAxis()->m_nCatchVal = m_pStatusCheck->m_nCH2CatchOffset;
-//        }
     }
 }
 
+void MainWindow::UpdateBatteryStatusSlot(int nBatteryCap)
+{
+    /** Battery Capcity Value isnot Avaliable */
+    if (nBatteryCap < 0)
+    {
+        if (nBatteryCap == -4)
+        {
+            qDebug() << "Open Device /dev/adc Failed!";
+        }
+        else if (nBatteryCap == -3)
+        {
+            qDebug() << "Set Device /dev/adc Channel Failed!";
+        }
+        else if (nBatteryCap == -2)
+        {
+            qDebug() << "Tranform Battery Capacity Value Failed!";
+        }
+        else if (nBatteryCap == -1)
+        {
+            qDebug() << "Read Battery Capacity Value Failed!";
+        }
+        else
+        {
+            qDebug() << "Read Battery Capacity Value Failed! Unknown Error!";
+        }
+    }
+    /** Battery Capacity Value is Avaliable */
+    else
+    {
+        /** Battery Capacity Full */
+        if (nBatteryCap > 12)
+        {
+            /** Set Battery Capacity Image Full */
+            this->ui->BatteryStatusLabel->setStyleSheet(
+                        QString("border-image: url(:/Images/Images/Battery_Full.png);"));
+        }
+        /** Battery Capacity Medium */
+        else if (nBatteryCap > 11)
+        {
+            /** Set Battery Capacity Image High */
+            this->ui->BatteryStatusLabel->setStyleSheet(
+                        QString("border-image: url(:/Images/Images/Battery_Medium.png);"));
+        }
+        /** Battery Capacity Low */
+        else
+        {
+            /** Set Battery Capacity Image Low */
+            this->ui->BatteryStatusLabel->setStyleSheet(
+                        QString("border-image: url(:/Images/Images/Battery_Low.png);"));
+        }
+    }
 
+#ifdef _DEBUG_OUTPUT
+            /** Debug Output */
+            qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz")
+                     << " Battery Monitor Send Value  "
+                     << nBatteryCap;
+#endif
+}
 
+/**
+ * @brief MainWindow::mouseMoveEvent
+ * @param e
+ */
+void MainWindow::mouseMoveEvent(QMouseEvent *e)
+{
+    /** Only if Device is Paused */
+    if (m_bIsPause == true)
+    {
+        /** Set Mouse Position to CurveWidget 1 & 2 */
+        this->ui->Curve1Wgt->setMousePos(e->pos());
+        this->ui->Curve2Wgt->setMousePos(e->pos());
 
+#ifdef _DEBUG_OUTPUT
+        /** Debug Output */
+        qDebug() << "Detect Mouse Double Click Event, Position("
+                 << e->pos().x()
+                 << ","
+                 << e->pos().y()
+                 << ")";
+#endif
+    }
+}
 
 
 

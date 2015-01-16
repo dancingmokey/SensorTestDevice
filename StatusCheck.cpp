@@ -41,7 +41,7 @@ void StatusCheck::run(void)
             /** Reset Last Status */
             nLastCH1Status = m_nCH1Status;
 
-#ifndef _DEBUG_OUTPUT
+#ifdef _DEBUG_OUTPUT
             /** Debug Output */
             qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz")
                      << " Now Channel 1 Status is "
@@ -69,7 +69,7 @@ void StatusCheck::run(void)
             /** Reset Last Status */
             nLastCH2Status = m_nCH2Status;
 
-#ifndef _DEBUG_OUTPUT
+#ifdef _DEBUG_OUTPUT
             /** Debug Output */
             qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz")
                      << " Now Channel 2 Status is "
@@ -94,7 +94,7 @@ void StatusCheck::run(void)
             }
         }
 
-#ifndef _DEBUG_OUTPUT
+#ifdef _DEBUG_OUTPUT
         /** Debug Output */
         qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
                  << " Now Channel 1 Status is "
