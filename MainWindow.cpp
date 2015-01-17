@@ -277,11 +277,13 @@ void MainWindow::on_PauseCtrlBtn_clicked(void)
         {
             Axis* pCurve1XAxis = this->ui->Curve1Wgt->getCurve()->getXAxis();
             this->ui->Curve1Wgt->setIsDrawMousePos(true);
+            this->ui->Curve1Wgt->setMousePos(QPoint(665, 0));
             this->ui->Curve1Wgt->setZoomParams(true,
                                                pCurve1XAxis->getMaxValue(),
                                                pCurve1XAxis->getMinValue());
             Axis* pCurve2XAxis = this->ui->Curve2Wgt->getCurve()->getXAxis();
             this->ui->Curve2Wgt->setIsDrawMousePos(true);
+            this->ui->Curve2Wgt->setMousePos(QPoint(665, 0));
             this->ui->Curve2Wgt->setZoomParams(true,
                                                pCurve2XAxis->getMaxValue(),
                                                pCurve2XAxis->getMinValue());
@@ -428,6 +430,7 @@ void MainWindow::DataProcPauseSlot(QString strProcName, double dNewMaxVal, doubl
         if (m_bIsAutoCatch == true)
         {
             this->ui->Curve1Wgt->setIsDrawMousePos(true);
+            this->ui->Curve1Wgt->setMousePos(QPoint(665, 0));
             this->ui->Curve1Wgt->setZoomParams(true, dNewMaxVal, dNewMinVal);
         }
     }
@@ -436,6 +439,7 @@ void MainWindow::DataProcPauseSlot(QString strProcName, double dNewMaxVal, doubl
         if (m_bIsAutoCatch == true)
         {
             this->ui->Curve2Wgt->setIsDrawMousePos(true);
+            this->ui->Curve2Wgt->setMousePos(QPoint(665, 0));
             this->ui->Curve2Wgt->setZoomParams(true, dNewMaxVal, dNewMinVal);
         }
     }

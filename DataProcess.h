@@ -50,12 +50,6 @@ public:
      */
     double getFilterValue(double dCurrValue);
 
-    /**
-     * @brief getPauseStatus
-     * @return
-     */
-    bool getPauseStatus(void);
-
 
 public:
     /**
@@ -75,6 +69,12 @@ public:
      * @return
      */
     int getPausePosition();
+
+    /**
+     * @brief getIsCatched
+     * @return
+     */
+    bool getIsCatched(void);
 
     /**
      * @brief setProcName
@@ -100,13 +100,6 @@ public:
      */
     void setPause(bool bIsPause);
 
-    /**
-     * @brief setPause
-     * @param bIsPause
-     * @param nPausePos
-     */
-    void setPauseCondition(bool bIsPause, int nPausePos);
-
 signals:
     /**
      * @brief DataProcUpdateSignal
@@ -116,7 +109,7 @@ signals:
     /**
      * @brief DataProcPauseSignal
      */
-    void DataProcPauseSignal(void);
+    void DataProcPauseSignal(QString, double, double);
 
     /**
      * @brief DataProcErrorSignal
@@ -198,6 +191,11 @@ private:
      * @brief m_nPausePosition
      */
     int m_nPausePosition;
+
+    /**
+     * @brief m_bIsSendPauseSig
+     */
+    bool m_bIsSendPauseSig;
 
 
 };

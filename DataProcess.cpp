@@ -319,7 +319,6 @@ bool DataProcess::getIsCatched(void)
     return m_bIsCatched;
 }
 
-
 /**
  * @brief setProcName
  * @param strProcName : QString : Data Processor Name

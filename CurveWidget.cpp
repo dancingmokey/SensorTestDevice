@@ -12,6 +12,8 @@ CurveWidget::CurveWidget(QWidget *parent) :
                                     this->rect().width(),
                                     this->rect().height()));
     m_nZoomValue = 1000;
+    m_ptMousePos = QPoint(665, 0);
+    m_bIsDrawMousePos = false;
 }
 
 /**
@@ -377,6 +379,8 @@ void CurveWidget::ZoomInOperation(void)
     /** Debug Output */
     qDebug() << "Zoom In Operation Update Axis Scale, Now Zoom Value is "
              << m_nZoomValue
+             << " Mouse Position is "
+             << m_ptMousePos.x()
              << " Mouse Position Value is "
              << m_dMousePosVal
              << " Max Value Changed from "
@@ -391,7 +395,7 @@ void CurveWidget::ZoomInOperation(void)
 
     /** Set X Axis Manimum & Minimum Value and then Update Scale */
     pCurveXAxis->UpdateAxisScale(dNewMaxValue, dNewMinValue, Global::Axis_Hor_TickVal);
-    m_ptMousePos.setX(pCurveXAxis->GetValueByPosition(m_dMousePosVal));
+    m_ptMousePos.setX(pCurveXAxis->GetPositionByValue(m_dMousePosVal));
 
     /** Repaint Curve Widget */
     this->repaint();
@@ -434,9 +438,9 @@ void CurveWidget::ZoomOutOperation(void)
 #endif
 
     /** Set X Axis Manimum & Minimum Value and then Update Scale */
-    Axis* pCurveXAxis = m_pCurve->getXAxis();
+    Axis* pCurveXAxis = this->getCurve()->getXAxis();
     pCurveXAxis->UpdateAxisScale(dNewMaxValue, dNewMinValue, Global::Axis_Hor_TickVal);
-    m_ptMousePos.setX(pCurveXAxis->GetValueByPosition(m_dMousePosVal));
+    m_ptMousePos.setX(pCurveXAxis->GetPositionByValue(m_dMousePosVal));
 
     /** Repaint Curve Widget */
     this->repaint();
@@ -468,7 +472,13 @@ void CurveWidget::setMousePos(QPoint ptMousePos)
     /** Set Mouse Position */
     m_ptMousePos = ptMousePos;
 
-    /** Get Variables */
+    /** Reset Mouse Position */
+    if (m_ptMousePos.x() < Global::Axis_Margin)
+    {
+        m_ptMousePos.setX(Global::Axis_Margin);
+    }
+
+    /** Calculate Mouse Position Value */
     Axis* pCurveXAxis = this->getCurve()->getXAxis();
     int nMousePosX = m_ptMousePos.x() - pCurveXAxis->getAxisLine()->p1().x();
     m_dMousePosVal = pCurveXAxis->GetValueByPosition((double)nMousePosX);
