@@ -28,7 +28,6 @@ SOURCES += main.cpp\
     SerialPort/posix_qextserialport.cpp \
     SerialPort/qextserialbase.cpp \
     DataProcess.cpp \
-    StatusCheck.cpp \
     BatteryMonitor.cpp
 
 HEADERS  += MainWindow.h \
@@ -42,7 +41,6 @@ HEADERS  += MainWindow.h \
     SerialPort/posix_qextserialport.h \
     SerialPort/qextserialbase.h \
     DataProcess.h \
-    StatusCheck.h \
     BatteryMonitor.h
 
 FORMS    += MainWindow.ui

@@ -10,14 +10,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     m_bIsPause(false),
     m_bIsAutoCatch(false),
+    m_bIsCatched(false),
     m_pCH1DataSrc(NULL),
     m_pCH2DataSrc(NULL),
     m_pCH1DataProc(NULL),
-    m_pCH2DataProc(NULL),
-    m_pStatusCheck(NULL)
+    m_pCH2DataProc(NULL)
 {
     /** Setup UI of Main Window */
     ui->setupUi(this);
+
+    /** */
+    m_bIsPause = false;
+    m_bIsAutoCatch = false;
+    m_bIsCatched = false;
 
     /** ? */
     this->setAttribute(Qt::WA_AcceptTouchEvents);
@@ -27,9 +32,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /** Create Battery Monitor */
     this->CreateBatteryMonitor();
-
-    /** Create StatusCheck */
-    this->CreateStatusCheck();
 
     /** Create Data Source of Channel 1 and Channel 2 */
     this->CreateDataSource();
@@ -119,27 +121,6 @@ void MainWindow::CreateBatteryMonitor(void)
 }
 
 /**
- * @brief CreateStatusCheck
- */
-void MainWindow::CreateStatusCheck(void)
-{
-    /** Create Status Check */
-    m_pStatusCheck = new StatusCheck(this);
-    m_pStatusCheck->setEnableRunning(true);
-    m_pStatusCheck->start();
-
-    /** Create Connection */
-    connect(m_pStatusCheck,
-            SIGNAL(UpdateCHStatusSignal(QString,unsigned char,QTime,int,double)),
-            this,
-            SLOT(UpdateCHStatusSlot(QString,unsigned char,QTime,int,double)));
-    connect(m_pStatusCheck,
-            SIGNAL(UpdateSensorStatusSignal(int)),
-            this,
-            SLOT(UpdateSensorStatusSlot(int)));
-}
-
-/**
  * @brief CreateDataProcess
  */
 void MainWindow::CreateDataProcess(void)
@@ -147,12 +128,15 @@ void MainWindow::CreateDataProcess(void)
     /** Create Data Process of Channel 1 */
     m_pCH1DataProc = new DataProcess(Global::CH1_Serial_Name,
                                      ui->Curve1Wgt->getCurve(),
-                                     ui->Curve2Wgt->getCurve(),
-                                     m_pStatusCheck);
+                                     ui->Curve2Wgt->getCurve());
     m_pCH1DataProc->setEnableRunning(true);
     m_pCH1DataProc->start();
 
     /** Create Connection */
+    connect(m_pCH1DataProc,
+            SIGNAL(UpdateCHDirectSignal()),
+            this,
+            SLOT(UpdateCHDirectSlot()));
     connect(m_pCH1DataProc,
             SIGNAL(DataProcPauseSignal(QString, double, double)),
             this,
@@ -161,12 +145,15 @@ void MainWindow::CreateDataProcess(void)
     /** Create Data Process of Channel 2 */
     m_pCH2DataProc = new DataProcess(Global::CH2_Serial_Name,
                                      ui->Curve1Wgt->getCurve(),
-                                     ui->Curve2Wgt->getCurve(),
-                                     m_pStatusCheck);
+                                     ui->Curve2Wgt->getCurve());
     m_pCH2DataProc->setEnableRunning(true);
     m_pCH2DataProc->start();
 
     /** Create Connection */
+    connect(m_pCH2DataProc,
+            SIGNAL(UpdateCHDirectSignal()),
+            this,
+            SLOT(UpdateCHDirectSlot()));
     connect(m_pCH2DataProc,
             SIGNAL(DataProcPauseSignal(QString, double, double)),
             this,
@@ -265,16 +252,15 @@ void MainWindow::on_PauseCtrlBtn_clicked(void)
         /** Reset Pause Flag */
         m_bIsPause = true;
 
-        /** Pause Data Process Thread */
-        m_pCH1DataProc->setPause(true);
-        m_pCH2DataProc->setPause(true);
-
         /** Allow Curve Widget Draw Mouse Position Line when Auto Catch Mode is close */
         if ((m_bIsAutoCatch == false) ||
             ((m_bIsAutoCatch == true) &&
-             ((m_pCH1DataProc->getIsCatched() == false) ||
-              (m_pCH2DataProc->getIsCatched() == false))))
+             ((m_bIsCatched == false))))
         {
+            /** Pause Data Process Thread */
+            m_pCH1DataProc->setPausePosition(true, 0);
+            m_pCH2DataProc->setPausePosition(true, 0);
+
             Axis* pCurve1XAxis = this->ui->Curve1Wgt->getCurve()->getXAxis();
             this->ui->Curve1Wgt->setIsDrawMousePos(true);
             this->ui->Curve1Wgt->setMousePos(QPoint(665, 0));
@@ -288,25 +274,28 @@ void MainWindow::on_PauseCtrlBtn_clicked(void)
                                                pCurve2XAxis->getMaxValue(),
                                                pCurve2XAxis->getMinValue());
         }
+        else
+        {
+            /** Pause Data Process Thread */
+            m_pCH1DataProc->setPausePosition(true, 700);
+            m_pCH2DataProc->setPausePosition(true, 700);
+        }
 
         /** Change Button Bounder-Image */
         this->ui->PauseCtrlBtn->setStyleSheet(
                     QString("border-image: url(:/Images/Images/ContinueBtn.png);"));
-
-        /** Change Label Bounder-Image */
-        this->ui->LeftInfoLabel->setStyleSheet(
-                    QString("border-image: url(:/Images/Images/PauseLabel.png);"));
     }
     else
     {
         /** Reset Pause Flag */
         m_bIsPause = false;
 
+        /** Reset Catched Flag */
+        m_bIsCatched = false;
+
         /** Restart Data Process Thread */
-        m_pCH1DataProc->setPause(false);
-        m_pCH1DataProc->setIsCatched(false);
-        m_pCH2DataProc->setPause(false);
-        m_pCH2DataProc->setIsCatched(false);
+        m_pCH1DataProc->setPausePosition(false, 0);
+        m_pCH2DataProc->setPausePosition(false, 0);
 
         /** Forbidden Curve Widget Draw Mouse Position Line */
         this->ui->Curve1Wgt->setIsDrawMousePos(false);
@@ -317,24 +306,6 @@ void MainWindow::on_PauseCtrlBtn_clicked(void)
         /** Change Button Bounder-Image */
         this->ui->PauseCtrlBtn->setStyleSheet(
                     QString("border-image: url(:/Images/Images/PauseBtn.png);"));
-
-        /** Change Label Bounder-Image */
-        this->ui->LeftInfoLabel->setStyleSheet(
-                    QString("border-image: url(:/Images/Images/RunningLabel.png);"));
-
-        /** Recover Avto Catch Label */
-        if (m_bIsAutoCatch == true)
-        {
-            /** Change Label Bounder-Image */
-            this->ui->RightInfoLabel->setStyleSheet(
-                        QString("border-image: url(:/Images/Images/AutoCatchOpenLabel.png);"));
-        }
-        else
-        {
-            /** Change Label Bounder-Image */
-            this->ui->RightInfoLabel->setStyleSheet(
-                        QString("border-image: url(:/Images/Images/AutoCatchCloseLabel.png);"));
-        }
     }
 }
 
@@ -348,26 +319,28 @@ void MainWindow::on_CatchCtrlBtn_clicked(void)
     {
         /** Reset Auto Catch Flag */
         m_bIsAutoCatch = true;
+        m_bIsCatched = false;
 
         /** Change Button Bounder-Image */
         this->ui->CatchCtrlBtn->setStyleSheet(
                     QString("border-image: url(:/Images/Images/AutoCatchCloseBtn.png);"));
 
         /** Change Label Bounder-Image */
-        this->ui->RightInfoLabel->setStyleSheet(
+        this->ui->LeftInfoLabel->setStyleSheet(
                     QString("border-image: url(:/Images/Images/AutoCatchOpenLabel.png);"));
     }
     else
     {
         /** Reset Pause Flag */
         m_bIsAutoCatch = false;
+        m_bIsCatched = false;
 
         /** Change Button Bounder-Image */
         this->ui->CatchCtrlBtn->setStyleSheet(
                     QString("border-image: url(:/Images/Images/AutoCatchOpenBtn.png);"));
 
         /** Change Label Bounder-Image */
-        this->ui->RightInfoLabel->setStyleSheet(
+        this->ui->LeftInfoLabel->setStyleSheet(
                     QString("border-image: url(:/Images/Images/AutoCatchCloseLabel.png);"));
     }
 }
@@ -420,6 +393,70 @@ void MainWindow::UpdateSlot(void)
 }
 
 /**
+ * @brief MainWindow::UpdateCHDirectSlot
+ */
+void MainWindow::UpdateCHDirectSlot(void)
+{
+    /** Get Channel 1 & 2 Status */
+    uint8 nCH1Direct = m_pCH1DataProc->getChannelDirect();
+    uint8 nCH2Direct = m_pCH2DataProc->getChannelDirect();
+
+    /** Check Sensor Direct */
+    if ((nCH1Direct == Global::CH_Direct_None) ||
+        (nCH2Direct == Global::CH_Direct_None))
+    {
+        /** Change Test Info Image */
+        this->ui->RightInfoLabel->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/DirectUnknown.png);"));
+    }
+    /** Sensor Direct is Positive */
+    else if ((nCH1Direct == Global::CH_Direct_Pos) ||
+             (nCH2Direct == Global::CH_Direct_Neg))
+    {
+        /** In Auto Catch Mode, Pause Curves */
+        if ((m_bIsAutoCatch == true) &&
+            (m_bIsCatched == false))
+        {
+            /** Reset Catched Flag */
+            m_bIsCatched = true;
+
+            /** Pause Data Process Thread */
+            emit this->ui->PauseCtrlBtn->click();
+        }
+
+        /** Change Test Info Image */
+        this->ui->RightInfoLabel->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/DirectPos.png);"));
+    }
+    /** Sensor Direct is Negtive */
+    else if ((nCH1Direct == Global::CH_Direct_Neg) ||
+             (nCH2Direct == Global::CH_Direct_Pos))
+    {
+        /** In Auto Catch Mode, Pause Curves */
+        if ((m_bIsAutoCatch == true) &&
+            (m_bIsCatched == false))
+        {
+            /** Reset Catched Flag */
+            m_bIsCatched = true;
+
+            /** Pause Data Process Thread */
+            emit this->ui->PauseCtrlBtn->click();
+        }
+
+        /** Change Test Info Image */
+        this->ui->RightInfoLabel->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/DirectNeg.png);"));
+    }
+    /** Sensor Direct is Invalidity */
+    else
+    {
+        /** Change Test Info Image */
+        this->ui->RightInfoLabel->setStyleSheet(
+                    QString("border-image: url(:/Images/Images/DirectError.png);"));
+    }
+}
+
+/**
  * @brief DataProcPauseSlot
  * @param strProcName
  */
@@ -446,92 +483,9 @@ void MainWindow::DataProcPauseSlot(QString strProcName, double dNewMaxVal, doubl
 }
 
 /**
- * @brief MainWindow::UpdateCHStatusSlot
- * @param strCHName
- * @param nCHStatus
- * @param dtCHCatch
- * @param nCHCatchOffset
- * @param nCHExtremumVal
+ * @brief MainWindow::UpdateBatteryStatusSlot
+ * @param nBatteryCap
  */
-void MainWindow::UpdateCHStatusSlot(QString strCHName,
-                                    uint8 nCHStatus,
-                                    QTime dtCHCatch,
-                                    int nCHCatchOffset,
-                                    double dCHExtremumVal)
-{
-    /** */
-    if (m_bIsPause == true)
-    {
-        return;
-    }
-
-#ifdef _DEBUG_OUTPUT
-    /** Debug Output */
-    qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz")
-             << " Received Update Channel StatusTimer Signal Channel Name is "
-             << strCHName
-             << " Status is "
-             << Global::Status_ToString(nCHStatus)
-             << " Catch Time is "
-             << dtCHCatch.toString("hh:mm:ss.zzz")
-             << " Offset is "
-             << nCHCatchOffset
-             << " Value is "
-             << dCHExtremumVal
-             << " v";
-#endif
-}
-
-/**
- * @brief MainWindow::UpdateSensorStatusSlot
- * @param nMSDiff
- */
-void MainWindow::UpdateSensorStatusSlot(int nMSDiff)
-{
-    /** Current Mode is Auto Catch */
-    if (m_bIsAutoCatch == true)
-    {
-        /** Now the Process is Runninng */
-        if (m_bIsPause == false)
-        {
-            /** Set Data Process Catched Flag */
-            m_pCH1DataProc->setIsCatched(true);
-            m_pCH2DataProc->setIsCatched(true);
-
-            /** Pause Data Process Thread */
-            emit this->ui->PauseCtrlBtn->click();
-
-            /** Which Channel was First Catch ? */
-            int nCH1Offset = this->m_pCH1DataProc->getPausePosition() -
-                    this->ui->Curve1Wgt->getCurve()->getXAxis()->getMinValue();
-            int nCH2Offset = this->m_pCH2DataProc->getPausePosition() -
-                    this->ui->Curve2Wgt->getCurve()->getXAxis()->getMinValue();
-            if (nMSDiff > 0)
-            {
-                this->ui->LeftInfoLabel->setStyleSheet(
-                            QString("border-image: url(:/Images/Images/CH1Lose.png);"));
-                this->ui->RightInfoLabel->setStyleSheet(
-                            QString("border-image: url(:/Images/Images/CH2Win.png);"));
-            }
-            else
-            {
-                this->ui->LeftInfoLabel->setStyleSheet(
-                            QString("border-image: url(:/Images/Images/CH1Win.png);"));
-                this->ui->RightInfoLabel->setStyleSheet(
-                            QString("border-image: url(:/Images/Images/CH2Lose.png);"));
-            }
-
-            /** Debug Output */
-            qDebug() << "Channel 1 Offset is "
-                     << nCH1Offset
-                     << " and Channel 2 Offset is "
-                     << nCH2Offset
-                     << " Time Diff is"
-                     << nMSDiff;
-        }
-    }
-}
-
 void MainWindow::UpdateBatteryStatusSlot(int nBatteryCap)
 {
     /** Battery Capcity Value isnot Avaliable */

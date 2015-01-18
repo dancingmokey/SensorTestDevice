@@ -520,6 +520,8 @@ void CurveWidget::setZoomParams(bool bIsPause, double dMaxValue, double dMinValu
             m_ltMaxZoomVals.clear();
             m_ltMinZoomVals.clear();
         }
+
+        /** Reset Zoom Value */
         m_nZoomValue = 1000;
     }
 }

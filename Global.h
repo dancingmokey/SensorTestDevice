@@ -18,6 +18,7 @@ extern QByteArray g_acCurve2;
 extern QList<QString> g_ltXLabelTexts;
 extern QTime g_dtLastUpDate;
 
+
 class Global
 {
 public:
@@ -71,28 +72,24 @@ public:
     static QString Status_ToString(uint8 nStatus);
 
 public:
-    static const uint8 Status_None = 0x01;
-    static const uint8 Status_Catch = 0x02;
-
-
+    /** Filter Threshold Value Definitions */
     static const double Filter_Threshold_Up = 8.0f;
     static const double Filter_Threshold_Down = 4.0f;
 
+    /** Channel Status Definitions */
+    static const uint8 CH_Status_None = 0x01;
+    static const uint8 CH_Status_High = 0x02;
+    static const uint8 CH_Status_Low = 0x03;
 
-    static const int Catch_Keep_Time = 300;
+    /** Channel Direct Definitions */
+    static const uint8 CH_Direct_None = 0x04;
+    static const uint8 CH_Direct_HL = 0x05;
+    static const uint8 CH_Direct_LH = 0x06;
+    static const uint8 CH_Direct_Pos = 0x07;
+    static const uint8 CH_Direct_Neg = 0x08;
 
-
-    static const uint8 Sensor_Status_None = 0x01;
-    static const uint8 Sensor_Status_Catch = 0x02;
-    static const uint8 Sensor_Status_CH1NONE = 0x03;
-    static const uint8 Sensor_Status_CH1UP = 0x04;
-    static const uint8 Sensor_Status_CH1DOWN = 0x05;
-    static const uint8 Sensor_Status_CH1Catch = 0x06;
-    static const uint8 Sensor_Status_CH2NONE = 0x03;
-    static const uint8 Sensor_Status_CH2UP = 0x04;
-    static const uint8 Sensor_Status_CH2DOWN = 0x05;
-    static const uint8 Sensor_Status_CH2Catch = 0x06;
-
+    /** Channel Status Keep Time Length */
+    static const int Status_Keep_Time = 300;
 };
 
 #endif // GLOBAL_H

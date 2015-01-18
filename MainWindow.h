@@ -6,7 +6,6 @@
 #include <QEvent>
 #include "DataSource.h"
 #include "DataProcess.h"
-#include "StatusCheck.h"
 #include "BatteryMonitor.h"
 
 namespace Ui {
@@ -94,30 +93,15 @@ private slots:
     void UpdateSlot(void);
 
     /**
+     * @brief UpdateCHDirectSlot
+     */
+    void UpdateCHDirectSlot(void);
+
+    /**
      * @brief DataProcPauseSlot
      * @param strProcName
      */
     void DataProcPauseSlot(QString strProcName, double dNewMaxVal, double dNewMinVal);
-
-    /**
-     * @brief UpdateCHStatusSlot
-     * @param strCHName
-     * @param nCHStatus
-     * @param dtCHCatch
-     * @param nCHCatchOffset
-     * @param nCHExtremumVal
-     */
-    void UpdateCHStatusSlot(QString strCHName,
-                            unsigned char nCHStatus,
-                            QTime dtCHCatch,
-                            int nCHCatchOffset,
-                            double nCHExtremumVal);
-
-    /**
-     * @brief UpdateSensorStatusSlot
-     * @param nMSDiff
-     */
-    void UpdateSensorStatusSlot(int nMSDiff);
 
     /**
      * @brief UpdateBatteryStatusSlot
@@ -142,6 +126,7 @@ private:
      * @brief m_bIsAutoCatch : bool : Is Auto Catch ot Manually
      */
     bool m_bIsAutoCatch;
+    bool m_bIsCatched;
 
     /**
      * @brief m_pBatteryMonitor
@@ -167,11 +152,6 @@ private:
      * @brief m_pCH2DataProc : DataProcess* : Channel 2 Data Process
      */
     DataProcess* m_pCH2DataProc;
-
-    /**
-     * @brief m_pStatusCheck
-     */
-    StatusCheck* m_pStatusCheck;
 
     /**
      * @brief m_pUpdateTimer : QTimer* : Timer of Update UI

@@ -23,5 +23,9 @@
         <file>Images/CH1Win.png</file>
         <file>Images/CH2Lose.png</file>
         <file>Images/CH2Win.png</file>
+        <file>Images/DirectError.png</file>
+        <file>Images/DirectNeg.png</file>
+        <file>Images/DirectPos.png</file>
+        <file>Images/DirectUnknown.png</file>
     </qresource>
 </RCC>

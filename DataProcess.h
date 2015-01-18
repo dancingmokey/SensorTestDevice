@@ -6,7 +6,6 @@
 #include <QTime>
 #include "Global.h"
 #include "Curve.h"
-#include "StatusCheck.h"
 
 /**
  * @brief The DataProcess class
@@ -25,7 +24,6 @@ public:
     explicit DataProcess(QString strProcName,
                          Curve* pCurve1,
                          Curve* pCurve2,
-                         StatusCheck* pStatusCheck,
                          QObject *parent = 0);
 
 public:
@@ -42,6 +40,12 @@ public:
      * @param dLastValue
      */
     void UpdateChannelStatus(double dCurrValue);
+
+    /**
+     * @brief DataProcess::UpdateChannelDirect
+     * @param nLastCHStatus
+     */
+    void UpdateChannelDirect(uint8 nLastCHStatus);
 
     /**
      * @brief getFilterValue
@@ -65,16 +69,16 @@ public:
     bool getEnableRunning(void) const;
 
     /**
-     * @brief getPausePosition
+     * @brief getChannelStatus
      * @return
      */
-    int getPausePosition();
+    uint8 getChannelStatus(void);
 
     /**
-     * @brief getIsCatched
+     * @brief getChannelDirect
      * @return
      */
-    bool getIsCatched(void);
+    uint8 getChannelDirect(void);
 
     /**
      * @brief setProcName
@@ -89,32 +93,22 @@ public:
     void setEnableRunning(bool bEnableRunning);
 
     /**
-     * @brief setIsCatched
-     * @param bIsCatched
-     */
-    void setIsCatched(bool bIsCatched);
-
-    /**
-     * @brief setPause
+     * @brief setPausePosition
      * @param bIsPause
+     * @param nDelayValue
      */
-    void setPause(bool bIsPause);
+    void setPausePosition(bool bIsPause, int nDelayValue);
 
 signals:
-    /**
-     * @brief DataProcUpdateSignal
-     */
-    void DataProcUpdateSignal(QString);
-
     /**
      * @brief DataProcPauseSignal
      */
     void DataProcPauseSignal(QString, double, double);
 
     /**
-     * @brief DataProcErrorSignal
+     * @brief UpdateCHDirectSignal
      */
-    void DataProcErrorSignal(QString);
+    void UpdateCHDirectSignal(void);
 
 public slots:
 
@@ -135,11 +129,6 @@ private:
     bool m_bEnableRunning;
 
     /**
-     * @brief m_bIsFirst
-     */
-    bool m_bIsFirst;
-
-    /**
      * @brief m_strProcName : QString : Data Processor Name
      */
     QString m_strProcName;
@@ -150,14 +139,9 @@ private:
     int m_nProcValueCnt;
 
     /**
-     * @brief m_nStatus
+     * @brief m_nChannelStatus
      */
-    uint8 m_nStatus;
-
-    /**
-     * @brief m_dtCatchTime
-     */
-    QTime m_dtCatch;
+    uint8 m_nChannelStatus;
 
     /**
      * @brief m_dLastValue
@@ -165,28 +149,20 @@ private:
     double m_dLastValue;
 
     /**
-     * @brief m_dExtremumVal
+     * @brief m_nChannelDirect
      */
-    double m_dExtremumVal;
+    uint8 m_nChannelDirect;
 
     /**
-     * @brief m_nCatchOffset
+     * @brief m_dtDirectChange
      */
-    int m_nCatchOffset;
+    QTime m_dtDirectChange;
 
-    /**
-     * @brief m_pStatusCheck
-     */
-    StatusCheck* m_pStatusCheck;
-
-    /**
-     * @brief m_bIsCatched
-     */
-    bool m_bIsCatched;
     /**
      * @brief m_bIsPause
      */
     bool m_bIsPause;
+
     /**
      * @brief m_nPausePosition
      */
@@ -196,8 +172,6 @@ private:
      * @brief m_bIsSendPauseSig
      */
     bool m_bIsSendPauseSig;
-
-
 };
 
 #endif // DATAPROCESS_H

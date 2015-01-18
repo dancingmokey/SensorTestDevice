@@ -342,7 +342,7 @@
            </rect>
           </property>
           <property name="styleSheet">
-           <string notr="true">border-image: url(:/Images/Images/RunningLabel.png);</string>
+           <string notr="true">border-image: url(:/Images/Images/AutoCatchCloseLabel.png);</string>
           </property>
           <property name="text">
            <string/>
@@ -358,7 +358,7 @@
            </rect>
           </property>
           <property name="styleSheet">
-           <string notr="true">border-image: url(:/Images/Images/AutoCatchCloseLabel.png);</string>
+           <string notr="true">border-image: url(:/Images/Images/DirectUnknown.png);</string>
           </property>
           <property name="text">
            <string/>

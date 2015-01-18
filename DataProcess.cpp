@@ -10,7 +10,6 @@
 DataProcess::DataProcess(QString strProcName,
                          Curve* pCurve1,
                          Curve* pCurve2,
-                         StatusCheck* pStatusCheck,
                          QObject *parent) :
     QThread(parent)
 {
@@ -18,15 +17,14 @@ DataProcess::DataProcess(QString strProcName,
     m_strProcName = strProcName;
     m_pCurve1 = pCurve1;
     m_pCurve2 = pCurve2;
-    m_bIsFirst = true;
-    m_nProcValueCnt = 0;
-    m_nStatus = Global::Status_None;
-    m_nCatchOffset = 0;
-    m_dExtremumVal = 0.0f;
-    m_dtCatch = QTime::currentTime();
-    m_pStatusCheck = pStatusCheck;
+
+    /** Initial Channel Direct & Status */
+    m_nChannelDirect = Global::CH_Direct_None;
+    m_nChannelStatus = Global::CH_Status_None;
     m_bIsPause = false;
-    m_bIsCatched = false;
+    m_nProcValueCnt = 0;
+    m_nPausePosition = 0;
+    m_bIsSendPauseSig = false;
 }
 
 /**
@@ -60,32 +58,33 @@ void DataProcess::run(void)
             g_mutexCurve2Locker.unlock();
         }
 
-        /** The Pulse has been Catched, Don't Process any Data */
-        if ((m_bIsCatched == true) &&
-            (m_bIsPause == true))
+        /** The Pulse has been Paused, Don't Process any Data */
+        if (m_bIsPause == true)
         {
+            /** Pause Data Process */
             if (m_nProcValueCnt >= m_nPausePosition)
             {
-                double dNewMaxVal = 0.0f;
-                double dNewMinVal = 0.0f;
-
-                if (m_strProcName == Global::CH1_Serial_Name)
-                {
-                    g_mutexCurve1Locker.lock();
-                    dNewMaxVal = m_pCurve1->getXAxis()->getMaxValue();
-                    dNewMinVal = m_pCurve1->getXAxis()->getMinValue();
-                    g_mutexCurve1Locker.unlock();
-                }
-                else if (m_strProcName == Global::CH2_Serial_Name)
-                {
-                    g_mutexCurve2Locker.lock();
-                    dNewMaxVal = m_pCurve2->getXAxis()->getMaxValue();
-                    dNewMinVal = m_pCurve2->getXAxis()->getMinValue();
-                    g_mutexCurve2Locker.unlock();
-                }
-
+                /** Is Send Pause Signal Already ? */
                 if (m_bIsSendPauseSig == false)
                 {
+                    double dNewMaxVal = 0.0f;
+                    double dNewMinVal = 0.0f;
+
+                    if (m_strProcName == Global::CH1_Serial_Name)
+                    {
+                        g_mutexCurve1Locker.lock();
+                        dNewMaxVal = m_pCurve1->getXAxis()->getMaxValue();
+                        dNewMinVal = m_pCurve1->getXAxis()->getMinValue();
+                        g_mutexCurve1Locker.unlock();
+                    }
+                    else if (m_strProcName == Global::CH2_Serial_Name)
+                    {
+                        g_mutexCurve2Locker.lock();
+                        dNewMaxVal = m_pCurve2->getXAxis()->getMaxValue();
+                        dNewMinVal = m_pCurve2->getXAxis()->getMinValue();
+                        g_mutexCurve2Locker.unlock();
+                    }
+
                     emit DataProcPauseSignal(m_strProcName, dNewMaxVal, dNewMinVal);
                     m_bIsSendPauseSig = true;
                 }
@@ -97,10 +96,9 @@ void DataProcess::run(void)
                 m_bIsSendPauseSig = false;
             }
         }
-        else if ((m_bIsCatched == false) &&
-                 (m_bIsPause == true))
+        else
         {
-            continue;
+            m_bIsSendPauseSig = false;
         }
 
         /** Check Data is Avaliable */
@@ -126,8 +124,10 @@ void DataProcess::run(void)
                     pValueList[nValueCount++] = dValue;
                     m_nProcValueCnt++;
 
-                    /** Update Channel Status */
+                    /** Make Value Through Filter */
                     dValue = getFilterValue(dValue);
+
+                    /** Update Channel Status */
                     UpdateChannelStatus(dValue);
                 }
 #endif
@@ -174,112 +174,262 @@ void DataProcess::run(void)
  */
 void DataProcess::UpdateChannelStatus(double dCurrValue)
 {
-    /** in First Update Case */
-    if (m_bIsFirst == true)
-    {
-        m_bIsFirst = false;
-        m_dLastValue = dCurrValue;
-    }
-
-    /** Get Current Time */
-    QTime dtCurr = QTime::currentTime();
+    /** Save Current Status */
+    uint8 nLastCHStatus = m_nChannelStatus;
 
     /** Current Status is None */
-    if (m_nStatus == Global::Status_None)
+    if (m_nChannelStatus == Global::CH_Status_None)
     {
-        /** Change Status to Catch if Value Changed */
-        if (dCurrValue != m_dLastValue)
+        /** Change Status to High */
+        if (dCurrValue >= Global::Filter_Threshold_Up)
         {
             /** Set Values */
-            m_nStatus = Global::Status_Catch;
-            m_dtCatch = dtCurr;
-            m_nCatchOffset = m_nProcValueCnt;
-            m_dExtremumVal = dCurrValue;
-            m_nPausePosition = m_nProcValueCnt + 1000;
-            Curve* pCurve = (m_strProcName == Global::CH1_Serial_Name) ? m_pCurve1 : m_pCurve2;
-            int nOffset = m_nProcValueCnt - pCurve->getXAxis()->getMinValue();
+            m_nChannelStatus = Global::CH_Status_High;
 
-            /** Update Channel Status */
-            m_pStatusCheck->UpdateChannelData(m_strProcName,
-                                              m_nStatus,
-                                              m_dtCatch,
-                                              nOffset,
-                                              m_dExtremumVal);
-#ifndef _DEBUG_OUTPUT
-            /** Debug Output*/
+#ifdef _DEBUG_OUTPUT
+            /** Debug Output */
             qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
                      << m_strProcName
-                     << " Catch Pluse at Time "
-                     << m_dtCatch.toString("hh:mm:ss.zzz ")
-                     << " at Point "
-                     << m_nProcValueCnt
-                     << ", Procee will Pause at Point "
-                     << m_nPausePosition
-                     << " Offset is "
-                     << nOffset;
+                     << " Status Changed from None to High";
 #endif
         }
         /** Keep Status to None if Value not Changed */
-        else
+        else if (dCurrValue <= Global::Filter_Threshold_Down)
         {
-            m_nStatus = Global::Status_None;
+            /** Set Values */
+            m_nChannelStatus = Global::CH_Status_Low;
+
+#ifdef _DEBUG_OUTPUT
+            /** Debug Output */
+            qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                     << m_strProcName
+                     << " Status Changed from None to Low";
+#endif
         }
     }
-    /** Current Status is None */
-    else if (m_nStatus == Global::Status_Catch)
+    /** Current Status is High */
+    else if (m_nChannelStatus == Global::CH_Status_High)
     {
-        /** When Value hasnot been Changed */
-        if (dCurrValue == m_dLastValue)
+        /** Change Status to High */
+        if (dCurrValue <= Global::Filter_Threshold_Down)
         {
-            /** Change Status to None Only when Catch Status keep Time loger than 300ms */
-            if (m_dtCatch.msecsTo(dtCurr) > Global::Catch_Keep_Time)
-            {
-#ifdef _DEBUG_OUTPUT
-                qDebug() << m_strProcName
-                         << " Status Changed from Catch to None "
-                         << "Catch Time = "
-                         << m_dtCatch.toString("hh:mm:ss.zzz ")
-                         << "Current Time = "
-                         << dtCurr.toString("hh:mm:ss.zzz ");
-#endif
-                m_nStatus = Global::Status_None;
+            /** Set Values */
+            m_nChannelStatus = Global::CH_Status_Low;
 
-                /** Update Channel Status */
-                m_pStatusCheck->UpdateChannelData(m_strProcName,
-                                                  m_nStatus,
-                                                  m_dtCatch,
-                                                  m_nProcValueCnt,
-                                                  m_dExtremumVal);
-            }
+#ifdef _DEBUG_OUTPUT
+            /** Debug Output */
+            qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                     << m_strProcName
+                     << " Status Changed from High to Low";
+#endif
         }
         /** When Value has been Changed, Keep Status to Catch*/
         else
         {
-            m_nStatus = Global::Status_Catch;
+            m_nChannelStatus = Global::CH_Status_High;
+        }
+    }
+    /** Current Status is High */
+    else if (m_nChannelStatus == Global::CH_Status_Low)
+    {
+        /** Change Status to High */
+        if (dCurrValue >= Global::Filter_Threshold_Up)
+        {
+            /** Set Values */
+            m_nChannelStatus = Global::CH_Status_High;
+
+#ifdef _DEBUG_OUTPUT
+            /** Debug Output */
+            qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                     << m_strProcName
+                     << " Status Changed from Low to High";
+#endif
+        }
+        /** Keep Status to None if Value not Changed */
+        /** When Value has been Changed, Keep Status to Catch*/
+        else
+        {
+            m_nChannelStatus = Global::CH_Status_Low;
         }
     }
     /** Unknown Status, Change it to None */
     else
     {
-        m_nStatus = Global::Status_None;
+#ifdef _DEBUG_OUTPUT
+            /** Debug Output */
+            qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                     << m_strProcName
+                     << " Status Changed from "
+                     << Global::Status_ToString(m_nChannelStatus)
+                     << " to None";
+#endif
+
+        /** Default Process */
+        m_nChannelStatus = Global::CH_Status_None;
     }
 
-    /** Reset Last Value */
-    m_dLastValue = dCurrValue;
+    /** Update Channel Direct */
+    this->UpdateChannelDirect(nLastCHStatus);
 }
 
+/**
+ * @brief DataProcess::UpdateChannelDirect
+ * @param nLastCHStatus
+ */
+void DataProcess::UpdateChannelDirect(uint8 nLastCHStatus)
+{
+    /** */
+    if ((nLastCHStatus == Global::CH_Status_None) ||
+        (m_nChannelStatus == Global::CH_Status_None))
+    {
+        m_nChannelDirect = Global::CH_Direct_None;
+        return;
+    }
 
+    /** Get Current Time */
+    QTime dtCurr = QTime::currentTime();
+
+    /** */
+    if (nLastCHStatus != m_nChannelStatus)
+    {
+        if (nLastCHStatus == Global::CH_Status_High)
+        {
+            if ((m_nChannelDirect == Global::CH_Direct_None) ||
+                (m_nChannelDirect == Global::CH_Direct_Pos) ||
+                (m_nChannelDirect == Global::CH_Direct_Neg))
+            {
+                m_nChannelDirect = Global::CH_Direct_HL;
+                m_dtDirectChange = dtCurr;
+
+#ifdef _DEBUG_OUTPUT
+                /** Debug Output */
+                qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                         << m_strProcName
+                         << " Direct Changed from None to High-Low at Point "
+                         << m_nProcValueCnt;
+#endif
+            }
+            else if (m_nChannelDirect == Global::CH_Direct_LH)
+            {
+                m_nChannelDirect = Global::CH_Direct_Neg;
+                m_dtDirectChange = dtCurr;
+
+                emit UpdateCHDirectSignal();
+
+#ifdef _DEBUG_OUTPUT
+                /** Debug Output */
+                qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                         << m_strProcName
+                         << " Direct Changed from Low-High to Negtive at Point "
+                         << m_nProcValueCnt;
+#endif
+            }
+        }
+        else if (nLastCHStatus == Global::CH_Status_Low)
+        {
+            if ((m_nChannelDirect == Global::CH_Direct_None) ||
+                (m_nChannelDirect == Global::CH_Direct_Pos) ||
+                (m_nChannelDirect == Global::CH_Direct_Neg))
+            {
+                m_nChannelDirect = Global::CH_Direct_LH;
+                m_dtDirectChange = dtCurr;
+
+#ifdef _DEBUG_OUTPUT
+                /** Debug Output */
+                qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                         << m_strProcName
+                         << " Direct Changed from None to Low-High at Point "
+                         << m_nProcValueCnt;
+#endif
+            }
+            else if (m_nChannelDirect == Global::CH_Direct_HL)
+            {
+                m_nChannelDirect = Global::CH_Direct_Pos;
+                m_dtDirectChange = dtCurr;
+
+                emit UpdateCHDirectSignal();
+
+#ifdef _DEBUG_OUTPUT
+                /** Debug Output */
+                qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                         << m_strProcName
+                         << " Direct Changed from High-Low to Positive at Point "
+                         << m_nProcValueCnt;
+#endif
+            }
+        }
+    }
+
+    /** */
+    if (m_dtDirectChange.msecsTo(dtCurr) >= Global::Status_Keep_Time)
+    {
+        if (m_nChannelDirect == Global::CH_Direct_LH)
+        {
+            m_nChannelDirect = Global::CH_Direct_Pos;
+            m_dtDirectChange = dtCurr;
+
+            emit UpdateCHDirectSignal();
+
+#ifdef _DEBUG_OUTPUT
+            /** Debug Output */
+            qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                     << m_strProcName
+                     << " Direct Changed from Low-High to Positive Cause Keep Timeout at Point "
+                     << m_nProcValueCnt;
+#endif
+        }
+        else if (m_nChannelDirect == Global::CH_Direct_HL)
+        {
+            m_nChannelDirect = Global::CH_Direct_Neg;
+            m_dtDirectChange = dtCurr;
+
+            emit UpdateCHDirectSignal();
+
+#ifdef _DEBUG_OUTPUT
+            /** Debug Output */
+            qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                     << m_strProcName
+                     << " Direct Changed from High-Low to Negative Cause Keep Timeout at Point "
+                     << m_nProcValueCnt;
+#endif
+        }
+        else
+        {
+             if (m_dtDirectChange.msecsTo(dtCurr) >= (Global::Status_Keep_Time * 10))
+             {
+                 m_nChannelDirect = Global::CH_Direct_None;
+                 m_dtDirectChange = dtCurr;
+
+#ifdef _DEBUG_OUTPUT
+                 /** Debug Output */
+                 qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz ")
+                          << m_strProcName
+                          << " Direct Changed to None Cause Keep Timeout";
+#endif
+             }
+        }
+    }
+}
+
+/**
+ * @brief DataProcess::getFilterValue
+ * @param dCurrValue
+ * @return
+ */
 double DataProcess::getFilterValue(double dCurrValue)
 {
+    /** Value More than Up Threshold */
     if (dCurrValue > Global::Filter_Threshold_Up)
     {
         dCurrValue = Global::Filter_Threshold_Up;
     }
+    /** Value Less than Down Threshold */
     else if (dCurrValue < Global::Filter_Threshold_Down)
     {
         dCurrValue = Global::Filter_Threshold_Down;
     }
 
+    /** Return Value Through Filter */
     return dCurrValue;
 }
 
@@ -302,21 +452,21 @@ bool DataProcess::getEnableRunning() const
 }
 
 /**
- * @brief DataProcess::getPausePosition
+ * @brief getChannelStatus
  * @return
  */
-int DataProcess::getPausePosition(void)
+uint8 DataProcess::getChannelStatus(void)
 {
-    return m_nPausePosition;
+    return m_nChannelStatus;
 }
 
 /**
- * @brief getIsCatched
+ * @brief getChannelDirect
  * @return
  */
-bool DataProcess::getIsCatched(void)
+uint8 DataProcess::getChannelDirect(void)
 {
-    return m_bIsCatched;
+    return m_nChannelDirect;
 }
 
 /**
@@ -338,20 +488,13 @@ void DataProcess::setEnableRunning(bool bEnableRunning)
 }
 
 /**
- * @brief DataProcess::setIsCatched
- * @param bIsCatched
- */
-void DataProcess::setIsCatched(bool bIsCatched)
-{
-    m_bIsCatched = bIsCatched;
-}
-
-/**
- * @brief DataProcess::setPause
+ * @brief setPausePosition
  * @param bIsPause
+ * @param nDelayValue
  */
-void DataProcess::setPause(bool bIsPause)
+void DataProcess::setPausePosition(bool bIsPause, int nDelayValue)
 {
     m_bIsPause = bIsPause;
+    m_nPausePosition = m_nProcValueCnt + nDelayValue;
 }
 

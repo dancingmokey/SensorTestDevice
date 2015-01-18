@@ -39,11 +39,15 @@ void Global::Safe_Delete(void* pPointer)
 
 QString Global::Status_ToString(uint8 nStatus)
 {
-    if (nStatus == Global::Status_Catch)
+    if (nStatus == Global::CH_Status_High)
     {
-        return QString("Catch");
+        return QString("High");
     }
-    else if (nStatus == Global::Status_None)
+    else if (nStatus == Global::CH_Status_Low)
+    {
+        return QString("Low");
+    }
+    else if (nStatus == Global::CH_Status_None)
     {
         return QString("None");
     }
