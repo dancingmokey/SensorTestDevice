@@ -96,9 +96,9 @@ void DataSource::run(void)
 
 #ifdef _DEBUG_SIMULATE
         /** Generate Random Numbers */
+        int nValue = qrand() % 130 - 10;    /** Random Number Range : -10 ~ 120 */
         for (int i = 0; i < 16; ++i)
         {
-            int nValue = qrand() % 130 - 10;    /** Random Number Range : -10 ~ 120 */
             acRecvBuf.append(nValue);
         }
 

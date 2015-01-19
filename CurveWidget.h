@@ -12,6 +12,22 @@
 
 #include "Curve.h"
 
+class ZoomParams
+{
+public:
+    ZoomParams(double dMaxValue, double dMinValue, int nZoomValue)
+    {
+        m_dMaxValue = dMaxValue;
+        m_dMinValue = dMinValue;
+        m_nZoomValue = nZoomValue;
+    }
+
+public:
+    double m_dMaxValue;
+    double m_dMinValue;
+    int m_nZoomValue;
+};
+
 /**
  * @brief The CurveWidget class
  */
@@ -181,15 +197,9 @@ private:
     int m_nZoomValue;
 
     /**
-     * @brief m_ltMinZoomVals
+     * @brief m_ltZoomParams
      */
-    QList<double> m_ltMinZoomVals;
-
-    /**
-     * @brief m_ltMaxZoomVals
-     */
-    QList<double> m_ltMaxZoomVals;
-
+    QList<ZoomParams*> m_ltZoomParams;
 };
 
 #endif // CURVEWIDGET_H

@@ -59,7 +59,12 @@ void DataProcess::run(void)
         }
 
         /** The Pulse has been Paused, Don't Process any Data */
-        if (m_bIsPause == true)
+        m_mutexWRLock.lock();
+        bool bIsPause = m_bIsPause;
+        m_mutexWRLock.unlock();
+
+        /** */
+        if (bIsPause == true)
         {
             /** Pause Data Process */
             if (m_nProcValueCnt >= m_nPausePosition)
@@ -91,11 +96,13 @@ void DataProcess::run(void)
 
                 continue;
             }
+            /** Hadnot Reached Pause Position, Keep Processing Data */
             else
             {
                 m_bIsSendPauseSig = false;
             }
         }
+        /** Device isnot Paused, Keep Processing Data */
         else
         {
             m_bIsSendPauseSig = false;
@@ -114,7 +121,15 @@ void DataProcess::run(void)
             {
 #ifdef _DEBUG_SIMULATE
                 int nValue = (uint8)acDataBuf.at(i);
-                pValueList[nValueCount++] = (double)nValue / 10.0f;
+                double dValue = (double)nValue / 10.0f;
+                pValueList[nValueCount++] = dValue;
+                m_nProcValueCnt++;
+
+                /** Make Value Through Filter */
+                dValue = getFilterValue(dValue);
+
+                /** Update Channel Status */
+                UpdateChannelStatus(dValue);
 #else
                 if (((uint8)acDataBuf.at(i)) != 0xAB)
                 {
@@ -494,7 +509,10 @@ void DataProcess::setEnableRunning(bool bEnableRunning)
  */
 void DataProcess::setPausePosition(bool bIsPause, int nDelayValue)
 {
+    /** */
+    m_mutexWRLock.lock();
     m_bIsPause = bIsPause;
     m_nPausePosition = m_nProcValueCnt + nDelayValue;
+    m_mutexWRLock.unlock();
 }
 

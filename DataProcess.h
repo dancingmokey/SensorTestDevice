@@ -172,6 +172,11 @@ private:
      * @brief m_bIsSendPauseSig
      */
     bool m_bIsSendPauseSig;
+
+    /**
+     * @brief m_mutexWRLock
+     */
+    QMutex m_mutexWRLock;
 };
 
 #endif // DATAPROCESS_H

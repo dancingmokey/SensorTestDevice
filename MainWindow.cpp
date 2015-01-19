@@ -570,6 +570,21 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
     }
 }
 
+#ifdef _DEBUG_SCREENSHOT
+/**
+ * @brief mouseDoubleClickEvent
+ * @param e
+ */
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    /** */
+    QString strScrShotName = QTime::currentTime().toString(QString("hh_mm_ss.jpg"));
+    QPixmap::grabWindow(QApplication::desktop()->winId()).save(strScrShotName, "jpg");
+
+    /** */
+    qDebug() << "Save Screen Shot Image " << strScrShotName << " Successed!";
+}
+#endif
 
 
 

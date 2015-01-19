@@ -372,8 +372,7 @@ void CurveWidget::ZoomInOperation(void)
     dNewMinValue = (dNewMinValue < pCurveXAxis->getMinValue()) ? pCurveXAxis->getMinValue() : dNewMinValue;
 
     /** Update Stack */
-    m_ltMaxZoomVals.push_back(dNewMaxValue);
-    m_ltMinZoomVals.push_back(dNewMinValue);
+    m_ltZoomParams.push_back(new ZoomParams(dNewMaxValue, dNewMinValue, m_nZoomValue));
 
 #ifdef _DEBUG_OUTPUT
     /** Debug Output */
@@ -414,16 +413,28 @@ void CurveWidget::ZoomOutOperation(void)
     }
 
     /** Recover to the Last Change */
-    double dNewMaxValue = m_ltMaxZoomVals.last();
-    double dNewMinValue = m_ltMinZoomVals.last();
-
-    /** Remain thr Original Max&Min Values */
-    if ((m_ltMaxZoomVals.size() > 1) &&
-        (m_ltMinZoomVals.size() > 1))
+    ZoomParams* pZoomParams = m_ltZoomParams.last();
+    if (pZoomParams != NULL)
     {
-        m_ltMaxZoomVals.pop_back();
-        m_ltMinZoomVals.pop_back();
+        /** */
+        double dNewMaxValue = pZoomParams->m_dMaxValue;
+        double dNewMinValue = pZoomParams->m_dMinValue;
+        m_nZoomValue = pZoomParams->m_nZoomValue;
+
+        /** Set X Axis Manimum & Minimum Value and then Update Scale */
+        Axis* pCurveXAxis = this->getCurve()->getXAxis();
+        pCurveXAxis->UpdateAxisScale(dNewMaxValue, dNewMinValue, Global::Axis_Hor_TickVal);
+        m_ptMousePos.setX(pCurveXAxis->GetPositionByValue(m_dMousePosVal));
     }
+
+    /** Remain the Original Max&Min Values */
+    if (m_ltZoomParams.size() > 1)
+    {
+        ZoomParams* pZoomParams = m_ltZoomParams.last();
+        Global::Safe_Delete(pZoomParams);
+        m_ltZoomParams.pop_back();
+    }
+
 
 #ifdef _DEBUG_OUTPUT
     /** Debug Output */
@@ -436,11 +447,6 @@ void CurveWidget::ZoomOutOperation(void)
              << " to "
              << dNewMinValue;
 #endif
-
-    /** Set X Axis Manimum & Minimum Value and then Update Scale */
-    Axis* pCurveXAxis = this->getCurve()->getXAxis();
-    pCurveXAxis->UpdateAxisScale(dNewMaxValue, dNewMinValue, Global::Axis_Hor_TickVal);
-    m_ptMousePos.setX(pCurveXAxis->GetPositionByValue(m_dMousePosVal));
 
     /** Repaint Curve Widget */
     this->repaint();
@@ -503,22 +509,24 @@ void CurveWidget::setZoomParams(bool bIsPause, double dMaxValue, double dMinValu
 {
     if (bIsPause == true)
     {
-        m_ltMaxZoomVals.push_back(dMaxValue);
-        m_ltMinZoomVals.push_back(dMinValue);
+        m_ltZoomParams.push_back(new ZoomParams(dMaxValue, dMinValue, m_nZoomValue));
     }
     else
     {
         /** Set X Axis Manimum & Minimum Value and then Update Scale */
-        if ((m_ltMaxZoomVals.isEmpty() == false) &&
-            (m_ltMinZoomVals.isEmpty() == false))
+        if (m_ltZoomParams.isEmpty() == false)
         {
-            m_pCurve->getXAxis()->UpdateAxisScale(
-                        m_ltMaxZoomVals.first(),
-                        m_ltMinZoomVals.first(),
-                        Global::Axis_Hor_TickVal);
+            ZoomParams* pZoomParams = m_ltZoomParams.first();
+            if (pZoomParams != NULL)
+            {
+                m_pCurve->getXAxis()->UpdateAxisScale(
+                            pZoomParams->m_dMaxValue,
+                            pZoomParams->m_dMinValue,
+                            Global::Axis_Hor_TickVal);
+            }
 
-            m_ltMaxZoomVals.clear();
-            m_ltMinZoomVals.clear();
+            qDeleteAll(m_ltZoomParams.begin(), m_ltZoomParams.end());
+            m_ltZoomParams.clear();
         }
 
         /** Reset Zoom Value */

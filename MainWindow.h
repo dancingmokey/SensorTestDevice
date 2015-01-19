@@ -4,6 +4,13 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QEvent>
+
+#ifdef _DEBUG_SCREENSHOT
+    #include <QPixmap>
+    #include <QApplication>
+    #include <QDesktopWidget>
+#endif
+
 #include "DataSource.h"
 #include "DataProcess.h"
 #include "BatteryMonitor.h"
@@ -115,6 +122,15 @@ protected:
      * @param e
      */
     void mouseMoveEvent(QMouseEvent *e);
+
+#ifdef _DEBUG_SCREENSHOT
+
+    /**
+     * @brief mouseDoubleClickEvent
+     * @param e
+     */
+    void mouseDoubleClickEvent(QMouseEvent *e);
+#endif
 
 private:
     /**

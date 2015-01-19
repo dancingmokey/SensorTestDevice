@@ -19,6 +19,7 @@ extern QList<QString> g_ltXLabelTexts;
 extern QTime g_dtLastUpDate;
 
 
+
 class Global
 {
 public:
