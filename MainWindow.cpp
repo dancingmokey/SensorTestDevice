@@ -293,15 +293,15 @@ void MainWindow::on_PauseCtrlBtn_clicked(void)
         /** Reset Catched Flag */
         m_bIsCatched = false;
 
-        /** Restart Data Process Thread */
-        m_pCH1DataProc->setPausePosition(false, 0);
-        m_pCH2DataProc->setPausePosition(false, 0);
-
         /** Forbidden Curve Widget Draw Mouse Position Line */
         this->ui->Curve1Wgt->setIsDrawMousePos(false);
         this->ui->Curve1Wgt->setZoomParams(false, 0.0f, 0.0f);
         this->ui->Curve2Wgt->setIsDrawMousePos(false);
         this->ui->Curve2Wgt->setZoomParams(false, 0.0f, 0.0f);
+
+        /** Restart Data Process Thread */
+        m_pCH1DataProc->setPausePosition(false, 0);
+        m_pCH2DataProc->setPausePosition(false, 0);
 
         /** Change Button Bounder-Image */
         this->ui->PauseCtrlBtn->setStyleSheet(

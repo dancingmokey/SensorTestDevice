@@ -138,6 +138,11 @@ public:
      */
     void ZoomOutOperation(void);
 
+    /**
+     * @brief ResetZoomParams
+     */
+    void ResetZoomParams(void);
+
 public:
     /**
      * @brief getCurve

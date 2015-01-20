@@ -405,11 +405,10 @@ void CurveWidget::ZoomInOperation(void)
  */
 void CurveWidget::ZoomOutOperation(void)
 {
-    /** Check Zoom Value */
-    m_nZoomValue += 200;
-    if (m_nZoomValue >= 1000)
+    /** Recover to the Last Change */
+    if (m_ltZoomParams.isEmpty() == true)
     {
-        m_nZoomValue = 1000;
+        return;
     }
 
     /** Recover to the Last Change */
@@ -513,18 +512,19 @@ void CurveWidget::setZoomParams(bool bIsPause, double dMaxValue, double dMinValu
     }
     else
     {
-        /** Set X Axis Manimum & Minimum Value and then Update Scale */
         if (m_ltZoomParams.isEmpty() == false)
         {
             ZoomParams* pZoomParams = m_ltZoomParams.first();
             if (pZoomParams != NULL)
             {
+                /** Set X Axis Manimum & Minimum Value and then Update Scale */
                 m_pCurve->getXAxis()->UpdateAxisScale(
                             pZoomParams->m_dMaxValue,
                             pZoomParams->m_dMinValue,
                             Global::Axis_Hor_TickVal);
             }
 
+            /** Delete All Elements in Zoom Params List */
             qDeleteAll(m_ltZoomParams.begin(), m_ltZoomParams.end());
             m_ltZoomParams.clear();
         }
