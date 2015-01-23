@@ -88,6 +88,11 @@ private:
     /**
      * @brief DrawMousePosLine
      */
+    void DrawWidgetName(void);
+
+    /**
+     * @brief DrawMousePosLine
+     */
     void DrawMousePosLine(void);
 
 public:

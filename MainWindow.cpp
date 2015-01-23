@@ -24,6 +24,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_bIsAutoCatch = false;
     m_bIsCatched = false;
 
+    /** Set Battery Capacity Alarm */
+    m_bIsBatteryLow = false;
+    m_pBatteryAlarmMv = new QMovie(":/Images/Images/Battery_Alarm.gif");
+
     /** ? */
     this->setAttribute(Qt::WA_AcceptTouchEvents);
 
@@ -483,6 +487,47 @@ void MainWindow::DataProcPauseSlot(QString strProcName, double dNewMaxVal, doubl
 }
 
 /**
+ * @brief CtrlBattryAlarm
+ * @param bAlarmStart
+ * @param strResourceName
+ */
+void MainWindow::CtrlBattryAlarm(bool bAlarmStart, QString strResourceName)
+{
+    /** Start Alarm */
+    if (bAlarmStart == true)
+    {
+        /** Only Start Movie 1 Time */
+        if (m_bIsBatteryLow == false)
+        {
+            /** Set Battery Low Flag */
+            m_bIsBatteryLow = true;
+
+            /** Set Label Show Mode */
+            this->ui->BatteryStatusLabel->setMovie(m_pBatteryAlarmMv);
+
+            /** Start Show Gif Picture */
+            m_pBatteryAlarmMv->start();
+        }
+
+    }
+    /** End Alarm */
+    else
+    {
+        /** Set Battery Low Flag */
+        m_bIsBatteryLow = false;
+
+        /** Stop Show Gif Picture */
+        m_pBatteryAlarmMv->stop();
+
+        /** Set Label Show Mode */
+        this->ui->BatteryStatusLabel->setPixmap(QPixmap());
+
+        /** Set Battery Capacity Image Full */
+        this->ui->BatteryStatusLabel->setStyleSheet(strResourceName);
+    }
+}
+
+/**
  * @brief MainWindow::UpdateBatteryStatusSlot
  * @param nBatteryCap
  */
@@ -491,54 +536,46 @@ void MainWindow::UpdateBatteryStatusSlot(int nBatteryCap)
     /** Battery Capcity Value isnot Avaliable */
     if (nBatteryCap < 0)
     {
-        if (nBatteryCap == -4)
-        {
-            qDebug() << "Open Device /dev/adc Failed!";
-        }
-        else if (nBatteryCap == -3)
-        {
-            qDebug() << "Set Device /dev/adc Channel Failed!";
-        }
-        else if (nBatteryCap == -2)
-        {
-            qDebug() << "Tranform Battery Capacity Value Failed!";
-        }
-        else if (nBatteryCap == -1)
-        {
-            qDebug() << "Read Battery Capacity Value Failed!";
-        }
-        else
-        {
-            qDebug() << "Read Battery Capacity Value Failed! Unknown Error!";
-        }
+        /** Set Battery Capacity Image Full */
+        this->CtrlBattryAlarm(false, QString("border-image: url(:/Images/Images/Battery_Invalid.png);"));
     }
     /** Battery Capacity Value is Avaliable */
     else
     {
-        /** Battery Capacity Full */
-        if (nBatteryCap > 12)
-        {
-            /** Set Battery Capacity Image Full */
-            this->ui->BatteryStatusLabel->setStyleSheet(
-                        QString("border-image: url(:/Images/Images/Battery_Full.png);"));
-        }
-        /** Battery Capacity Medium */
-        else if (nBatteryCap > 11)
-        {
-            /** Set Battery Capacity Image High */
-            this->ui->BatteryStatusLabel->setStyleSheet(
-                        QString("border-image: url(:/Images/Images/Battery_Medium.png);"));
-        }
-        /** Battery Capacity Low */
-        else
+        /** Battery is Very Low */
+        if (nBatteryCap < Global::Battery_Low_ThresVal)
         {
             /** Set Battery Capacity Image Low */
-            this->ui->BatteryStatusLabel->setStyleSheet(
-                        QString("border-image: url(:/Images/Images/Battery_Low.png);"));
+            this->CtrlBattryAlarm(true, QString(""));
+        }
+        else if (nBatteryCap < Global::Battery_G2_ThresVal)
+        {
+            /** Set Battery Capacity Image Low */
+            this->CtrlBattryAlarm(false, QString("border-image: url(:/Images/Images/Battery_Low.png);"));
+        }
+        else if (nBatteryCap < Global::Battery_Medium_ThresVal)
+        {
+            /** Set Battery Capacity Image Full */
+            this->CtrlBattryAlarm(false, QString("border-image: url(:/Images/Images/Battery_G2.png);"));
+        }
+        else if (nBatteryCap < Global::Battery_G1_ThresVal)
+        {
+            /** Set Battery Capacity Image Full */
+            this->CtrlBattryAlarm(false, QString("border-image: url(:/Images/Images/Battery_Medium.png);"));
+        }
+        else if (nBatteryCap < Global::Battery_High_ThresVal)
+        {
+            /** Set Battery Capacity Image Full */
+            this->CtrlBattryAlarm(false, QString("border-image: url(:/Images/Images/Battery_G1.png);"));
+        }
+        else
+        {
+            /** Set Battery Capacity Image Full */
+            this->CtrlBattryAlarm(false, QString("border-image: url(:/Images/Images/Battery_Full.png);"));
         }
     }
 
-#ifdef _DEBUG_OUTPUT
+#ifndef _DEBUG_OUTPUT
             /** Debug Output */
             qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz")
                      << " Battery Monitor Send Value  "

@@ -263,6 +263,9 @@
      </property>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout" stretch="100,100,100,100,300,3">
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
        <item>
         <widget class="QPushButton" name="CatchCtrlBtn">
          <property name="sizePolicy">
@@ -335,8 +338,8 @@
          <widget class="QLabel" name="LeftInfoLabel">
           <property name="geometry">
            <rect>
-            <x>0</x>
-            <y>1</y>
+            <x>260</x>
+            <y>0</y>
             <width>255</width>
             <height>98</height>
            </rect>
@@ -351,8 +354,8 @@
          <widget class="QLabel" name="RightInfoLabel">
           <property name="geometry">
            <rect>
-            <x>261</x>
-            <y>1</y>
+            <x>0</x>
+            <y>0</y>
             <width>255</width>
             <height>98</height>
            </rect>

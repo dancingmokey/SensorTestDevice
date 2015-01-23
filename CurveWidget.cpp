@@ -52,6 +52,9 @@ void CurveWidget::paintEvent(QPaintEvent *e)
     /** Draw Serials */
     this->DrawSerials();
 
+    /** Draw Widget Name */
+    this->DrawWidgetName();
+
     /** */
     if (m_bIsDrawMousePos == true)
     {
@@ -213,6 +216,27 @@ void CurveWidget::DrawLabels(void)
         QString strText = ltYLabelTexts.at(i);
         vPainter.drawText(*pRect, Qt::AlignRight | Qt::AlignVCenter, strText);
     }
+}
+
+/**
+ * @brief Draw Widget Name
+ */
+void CurveWidget::DrawWidgetName(void)
+{
+    /** Declare Painter and then Set Pen */
+    QPainter vPainter(this);
+    vPainter.setFont(QFont(QString("simsun"), 12, 3, false));
+    vPainter.setPen(QPen(Qt::white, 3, Qt::DotLine, Qt::FlatCap));
+
+    /** */
+    QRect rtNameBound = QRect(this->rect().right() - 100,
+                              this->rect().top(),
+                              100,
+                              50);
+    QString strWidgetName = (this->objectName() == QString("Curve1Wgt")) ? QString("通道1") : QString("通道2");
+
+    /** */
+    vPainter.drawText(rtNameBound, Qt::AlignHCenter | Qt::AlignVCenter, strWidgetName);
 }
 
 /**

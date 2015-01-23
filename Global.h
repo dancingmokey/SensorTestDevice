@@ -64,6 +64,19 @@ public:
     static const QString CH2_SerialPort_Name;
 
 
+
+    static const int ADC_Open_Failed = -4;
+    static const int ADC_Set_Failed = -3;
+    static const int ADC_Trans_Failed = -2;
+    static const int ADC_Read_Failed = -1;
+
+    static const int Battery_Low_ThresVal = 2980;
+    static const int Battery_G2_ThresVal = 3058;
+    static const int Battery_Medium_ThresVal = 3160;
+    static const int Battery_G1_ThresVal = 3261;
+    static const int Battery_High_ThresVal = 3363;
+
+
 public:
     /**
      * @brief Status_ToString

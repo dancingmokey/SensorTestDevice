@@ -46,15 +46,15 @@ void DataProcess::run(void)
         if (m_strProcName == Global::CH1_Serial_Name)
         {
             g_mutexCurve1Locker.lock();
-            acDataBuf.append(g_acCurve1);
-            g_acCurve1.clear();
+            acDataBuf.append(g_acCurve2);
+            g_acCurve2.clear();
             g_mutexCurve1Locker.unlock();
         }
         else if (m_strProcName == Global::CH2_Serial_Name)
         {
             g_mutexCurve2Locker.lock();
-            acDataBuf.append(g_acCurve2);
-            g_acCurve2.clear();
+            acDataBuf.append(g_acCurve1);
+            g_acCurve1.clear();
             g_mutexCurve2Locker.unlock();
         }
 

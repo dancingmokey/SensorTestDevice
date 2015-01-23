@@ -21,7 +21,7 @@ void BatteryMonitor::run()
         if (nFileDesc < 0)
         {
             /** Send Update Signale, Status = -1; */
-            emit UpdateBatteryStatusSignal(-4);
+            emit UpdateBatteryStatusSignal(Global::ADC_Open_Failed);
             continue;
         }
 
@@ -32,7 +32,7 @@ void BatteryMonitor::run()
             close(nFileDesc);
 
             /** Send Update Signal */
-            emit UpdateBatteryStatusSignal(-3);
+            emit UpdateBatteryStatusSignal(Global::ADC_Set_Failed);
             continue;
         }
 
@@ -47,7 +47,7 @@ void BatteryMonitor::run()
             pDataBuf[nLength] = '\0';
 
             /** Calc Battery Captility */
-            int nBatteryCap = -2;
+            int nBatteryCap = Global::ADC_Trans_Failed;
             sscanf(pDataBuf, "%d", &nBatteryCap);
 
             /** Send Update Signal */
@@ -60,12 +60,18 @@ void BatteryMonitor::run()
             close(nFileDesc);
 
             /** Send Update Signal */
-            emit UpdateBatteryStatusSignal(-1);
+            emit UpdateBatteryStatusSignal(Global::ADC_Read_Failed);
         }
 
         /** We Check Battery Every 10s */
         sleep(10);
     }
+
+    /** Read Failed, Close Device */
+    close(nFileDesc);
+
+    /** Debug Output */
+    qDebug() << "Battery Monitor Thread Exited!";
 }
 
 /**

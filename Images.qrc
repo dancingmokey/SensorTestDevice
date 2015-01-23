@@ -27,5 +27,9 @@
         <file>Images/DirectNeg.png</file>
         <file>Images/DirectPos.png</file>
         <file>Images/DirectUnknown.png</file>
+        <file>Images/Battery_Invalid.png</file>
+        <file>Images/Battery_G1.png</file>
+        <file>Images/Battery_G2.png</file>
+        <file>Images/Battery_Alarm.gif</file>
     </qresource>
 </RCC>

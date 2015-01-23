@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QEvent>
+#include <QMovie>
 
 #ifdef _DEBUG_SCREENSHOT
     #include <QPixmap>
@@ -72,6 +73,13 @@ public:
      * @brief CreateTimer
      */
     void CreateTimer(void);
+
+    /**
+     * @brief CtrlBattryAlarm
+     * @param bAlarmStart
+     * @param strResourceName
+     */
+    void CtrlBattryAlarm(bool bAlarmStart, QString strResourceName);
 
 private slots:
     /**
@@ -178,6 +186,9 @@ private:
      * @brief m_ptMousePos
      */
     QPoint m_ptMousePos;
+
+    QMovie* m_pBatteryAlarmMv;
+    bool m_bIsBatteryLow;
 
 private:
     /**

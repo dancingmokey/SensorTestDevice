@@ -15,6 +15,8 @@
 #include <QThread>
 #include <QDebug>
 
+#include "Global.h"
+
 class BatteryMonitor : public QThread
 {
     Q_OBJECT
