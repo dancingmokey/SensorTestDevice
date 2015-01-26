@@ -43,18 +43,18 @@ void DataProcess::run(void)
         QByteArray acDataBuf;
 
         /** Get Data List From Global Storage List */
-        if (m_strProcName == Global::CH1_Serial_Name)
+        if (m_strProcName == Global::CH2_Serial_Name)
         {
             g_mutexCurve1Locker.lock();
-            acDataBuf.append(g_acCurve2);
-            g_acCurve2.clear();
-            g_mutexCurve1Locker.unlock();
-        }
-        else if (m_strProcName == Global::CH2_Serial_Name)
-        {
-            g_mutexCurve2Locker.lock();
             acDataBuf.append(g_acCurve1);
             g_acCurve1.clear();
+            g_mutexCurve1Locker.unlock();
+        }
+        else if (m_strProcName == Global::CH1_Serial_Name)
+        {
+            g_mutexCurve2Locker.lock();
+            acDataBuf.append(g_acCurve2);
+            g_acCurve2.clear();
             g_mutexCurve2Locker.unlock();
         }
 
@@ -172,9 +172,7 @@ void DataProcess::run(void)
                      << " Process Data "
                      << nValueCount
                      << " Byte! All Data Count is "
-                     << m_nProcValueCnt
-                     << " Now Status is "
-                     << Global::Status_ToString(m_nStatus);
+                     << m_nProcValueCnt;
 #endif
         }
     }
